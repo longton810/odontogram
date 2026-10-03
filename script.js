@@ -2822,3 +2822,15 @@ document
 
     }
   );
+document.getElementById("clearAllBtn").addEventListener("click", function () {
+
+  const confirmed = confirm(
+    "Are you sure you want to clear the entire odontogram?"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  clearAllOdontogram();
+});
