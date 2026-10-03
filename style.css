@@ -1,0 +1,970 @@
+/* =========================================
+   GLOBAL
+========================================= */
+
+* {
+  font-family: Arial, sans-serif;
+}
+
+
+body {
+  font-family: Arial, sans-serif;
+
+  padding: 25px;
+
+  background: #fafafa;
+
+  color: #222;
+}
+
+
+button,
+input,
+textarea,
+select {
+  font-family: Arial, sans-serif;
+}
+
+
+h2 {
+  margin-top: 25px;
+}
+
+
+hr {
+  margin-top: 25px;
+  margin-bottom: 20px;
+
+  border: none;
+  border-top: 1px solid #bbb;
+}
+
+
+
+/* =========================================
+   ODONTOGRAM
+========================================= */
+
+.odontogram-grid {
+  position: relative;
+
+  display: inline-block;
+
+  padding: 10px 0;
+}
+
+
+.odontogram-grid::after {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  bottom: 55px;
+
+  left: 50%;
+
+  width: 2px;
+
+  background: #555;
+
+  transform: translateX(-50%);
+
+  pointer-events: none;
+
+  z-index: 0;
+}
+
+
+.quadrant-horizontal-line {
+  width: 100%;
+  height: 2px;
+
+  background: #555;
+
+  margin: 5px 0 12px 0;
+}
+
+
+
+/* =========================================
+   ARCH
+========================================= */
+
+.arch {
+  display: flex;
+
+  gap: 8px;
+
+  align-items: flex-start;
+
+  overflow-x: auto;
+
+  padding: 10px 5px;
+
+  margin-bottom: 8px;
+}
+
+
+.tooth {
+  width: 68px;
+  min-width: 68px;
+
+  text-align: center;
+
+  position: relative;
+
+  z-index: 1;
+}
+
+
+.tooth.midline {
+  margin-right: 12px;
+}
+
+
+
+/* =========================================
+   TOOTH SVG
+========================================= */
+
+.tooth-diagram {
+  width: 68px;
+  height: 105px;
+
+  display: block;
+
+  margin: auto;
+
+  overflow: visible;
+}
+
+
+
+/* =========================================
+   SURFACES
+========================================= */
+
+.surface {
+  fill: white;
+
+  stroke: #17324d;
+
+  stroke-width: 2;
+
+  cursor: pointer;
+
+  transition:
+    fill 0.15s,
+    opacity 0.15s;
+}
+
+
+.surface:hover {
+  fill: #eeeeee;
+}
+
+
+.surface.selected {
+  fill: #ffd54f !important;
+}
+
+
+
+/* =========================================
+   SURFACE LABELS
+========================================= */
+
+.tooth-diagram text {
+  font-family: Arial, sans-serif;
+
+  font-size: 15px;
+
+  font-weight: bold;
+
+  text-anchor: middle;
+
+  pointer-events: none;
+
+  user-select: none;
+}
+
+
+
+/* =========================================
+   CERVICAL BAND
+========================================= */
+
+.cervical-surface {
+  fill: white;
+
+  stroke: #17324d;
+
+  stroke-width: 2;
+
+  cursor: pointer;
+}
+
+
+.cervical-label {
+  font-family: Arial, sans-serif;
+
+  font-size: 17px !important;
+
+  font-weight: bold;
+
+  text-anchor: middle;
+
+  dominant-baseline: middle;
+
+  pointer-events: none;
+}
+
+
+
+/* =========================================
+   TOOTH NUMBER
+========================================= */
+
+.tooth-number {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 30px;
+  min-height: 26px;
+
+  padding: 2px 4px;
+
+  box-sizing: border-box;
+
+  font-family: Arial, sans-serif;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  border-radius: 4px;
+}
+
+
+.tooth-number:hover {
+  background: #eeeeee;
+}
+
+
+.tooth-number.selected {
+  background: #ffd54f;
+}
+
+
+
+/* =========================================
+   MOBILITY
+========================================= */
+
+.tooth-number.has-mobility {
+  border: 2px solid #e53935;
+
+  border-radius: 50%;
+
+  color: #e53935;
+}
+
+
+
+/* =========================================
+   POSITION DISPLAY
+========================================= */
+
+.position-display {
+  min-height: 16px;
+
+  margin-top: 3px;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 10px;
+
+  font-weight: bold;
+
+  line-height: 1.25;
+
+  text-align: center;
+
+  color: #555;
+}
+
+
+.position-item {
+  display: block;
+
+  white-space: nowrap;
+}
+
+
+
+/* =========================================
+   MAIN CONTROLS
+========================================= */
+
+.main-odontogram-controls {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 8px;
+
+  margin-top: 5px;
+
+  position: relative;
+
+  z-index: 5;
+}
+
+
+#missingMain {
+  padding: 6px 15px;
+
+  white-space: nowrap;
+}
+
+
+#changeAge {
+  padding: 6px 15px;
+
+  background: white;
+
+  color: #333;
+
+  border: 1px solid #777;
+
+  border-radius: 999px;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  line-height: 1.15;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+
+#changeAge:hover {
+  background: #eeeeee;
+}
+
+
+
+/* =========================================
+   FINDING LAYOUT
+========================================= */
+
+.finding-section {
+  max-width: 1100px;
+}
+
+
+.finding-row {
+  display: flex;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+
+  margin-bottom: 10px;
+}
+
+
+.finding-label {
+  width: 105px;
+
+  font-weight: bold;
+}
+
+
+
+/* =========================================
+   FINDING BUTTONS
+========================================= */
+
+.finding {
+  padding: 6px 15px;
+
+  margin: 2px;
+
+  border: none;
+
+  border-radius: 999px;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 13px;
+
+  font-weight: normal;
+
+  line-height: 1.15;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    opacity 0.12s ease;
+}
+
+
+/* 1.5x emphasis for primary Cavity and Composite buttons */
+.btn-featured {
+  padding: 9px 22.5px;
+  font-size: 19.5px;
+}
+
+
+.finding:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.20);
+}
+
+
+.finding:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+
+.finding:disabled {
+  opacity: 0.4;
+
+  cursor: not-allowed;
+}
+
+
+
+/* =========================================
+   CARIES BUTTONS
+========================================= */
+
+.btn-stain {
+  background: #795548;
+  color: white;
+}
+
+
+.btn-caries {
+  background: #e53935;
+  color: white;
+}
+
+
+.btn-incipient {
+  background: #ef9a9a;
+  color: white;
+}
+
+
+.btn-recurrent {
+  background: #b71c19;
+  color: white;
+}
+
+
+.btn-gross {
+  background: #7D1702;
+  color: white;
+}
+
+
+
+/* =========================================
+   FILLING BUTTONS
+========================================= */
+
+.btn-composite {
+  background: #42a5f5;
+  color: white;
+}
+
+
+.btn-amalgam {
+  background: #607d8b;
+  color: white;
+}
+
+
+.btn-sealant {
+  background: #26a69a;
+  color: white;
+}
+
+
+.btn-irm {
+  background: #ab47bc;
+  color: white;
+}
+
+
+
+/* =========================================
+   NON-CARIOUS BUTTONS
+========================================= */
+
+.btn-wear {
+  background: #ffb74d;
+  color: #222;
+}
+
+
+.btn-abfraction {
+  background: #ff8a65;
+  color: #222;
+}
+
+
+.btn-erosion {
+  background: #fff176;
+  color: #222;
+}
+
+
+.btn-crack {
+  background: #fff3e0;
+
+  color: #d84315;
+
+  border: 2px solid #d84315;
+}
+
+
+.btn-broken {
+  background: #ff7043;
+  color: white;
+}
+
+
+
+/* =========================================
+   CROWN / FPD BUTTONS
+========================================= */
+
+.btn-zirconia {
+  background: #ab47bc;
+  color: white;
+}
+
+
+.btn-pfm {
+  background: #5c6bc0;
+  color: white;
+}
+
+
+.btn-metal {
+  background: #607d8b;
+  color: white;
+}
+
+
+.btn-bridge {
+  background: #ffa726;
+  color: #222;
+}
+
+
+
+/* =========================================
+   OTHER BUTTONS
+========================================= */
+
+.btn-rct,
+.btn-post-core {
+  background: #66bb6a;
+  color: white;
+}
+
+
+.btn-implant {
+  background: #26a69a;
+  color: white;
+}
+
+
+.btn-root-tip {
+  background: #9e9e9e;
+  color: white;
+}
+
+
+.btn-missing {
+  background: #e0e0e0;
+
+  color: #333;
+
+  border: 1px solid #777;
+}
+
+
+
+/* =========================================
+   POSITION BUTTONS
+========================================= */
+
+.position-button {
+  background: #78909c;
+  color: white;
+}
+
+
+
+/* =========================================
+   SURFACE FINDING COLORS
+========================================= */
+
+.surface.stain {
+  fill: #795548;
+}
+
+
+.surface.caries {
+  fill: #e53935;
+}
+
+
+.surface.incipient-caries {
+  fill: #ef9a9a;
+}
+
+
+.surface.recurrent-caries {
+  fill: #c62828;
+}
+
+
+.surface.gross-caries {
+  fill: #7f0000;
+}
+
+
+.surface.composite {
+  fill: #2196f3;
+}
+
+
+.surface.amalgam {
+  fill: #757575;
+}
+
+
+.surface.sealant {
+  fill: #26a69a;
+}
+
+
+.surface.irm {
+  fill: #ba68c8;
+}
+
+
+.surface.wear {
+  fill: #ffb74d;
+}
+
+
+.surface.abfraction {
+  fill: #ff8a65;
+}
+
+
+.surface.erosion {
+  fill: #fff176;
+}
+
+
+.surface.crack-line {
+  fill: #fff3e0;
+
+  stroke: #d84315;
+
+  stroke-width: 5;
+}
+
+
+.surface.broken {
+  fill: #ff7043;
+
+  stroke: #bf360c;
+
+  stroke-width: 4;
+}
+
+
+
+/* =========================================
+   WHOLE TOOTH FINDINGS
+========================================= */
+
+.tooth-diagram.zirconia-crown {
+  outline: 5px solid #ab47bc;
+
+  outline-offset: 2px;
+}
+
+
+.tooth-diagram.pfm-crown {
+  outline: 5px solid #5c6bc0;
+
+  outline-offset: 2px;
+}
+
+
+.tooth-diagram.metal-crown {
+  outline: 5px solid #616161;
+
+  outline-offset: 2px;
+}
+
+
+.tooth-diagram.bridge {
+  outline: 5px solid #ffa726;
+
+  outline-offset: 2px;
+}
+
+
+.tooth-diagram.rct {
+  outline: 5px solid #66bb6a;
+
+  outline-offset: 2px;
+}
+
+
+.tooth-diagram.post-core {
+  outline: 5px double #66bb6a;
+
+  outline-offset: 2px;
+}
+
+
+.tooth-diagram.implant {
+  outline: 5px solid #26a69a;
+
+  outline-offset: 2px;
+}
+
+
+
+/* =========================================
+   MISSING TOOTH
+
+   Diagram disappears.
+   Tooth number remains.
+========================================= */
+
+.tooth-diagram.missing {
+  visibility: hidden;
+}
+
+
+
+/* =========================================
+   ROOT TIP
+========================================= */
+
+.tooth-diagram.root-tip
+.surface:not(.cervical-surface) {
+  display: none;
+}
+
+
+.tooth-diagram.root-tip
+text:not(.cervical-label) {
+  display: none;
+}
+
+
+.tooth-diagram.root-tip
+.cervical-surface {
+  display: block;
+
+  fill: #bdbdbd;
+
+  stroke: #555;
+
+  stroke-width: 2;
+}
+
+
+.tooth-diagram.root-tip
+.cervical-label {
+  display: block;
+}
+
+
+
+/* =========================================
+   CHART
+========================================= */
+
+#output {
+  width: 700px;
+
+  max-width: 90%;
+
+  min-height: 130px;
+
+  border: 1px solid #999;
+
+  background: white;
+
+  padding: 12px;
+
+  margin-bottom: 10px;
+}
+
+
+.chart-entry {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 7px 8px;
+
+  border-bottom: 1px solid #eeeeee;
+}
+
+
+
+/* =========================================
+   EDITABLE CHART TEXT
+========================================= */
+
+.chart-text {
+  flex: 1;
+
+  min-height: 24px;
+
+  padding: 3px 5px;
+
+  border-radius: 4px;
+
+  font-family: Arial, sans-serif;
+
+  cursor: text;
+}
+
+
+.chart-text:hover {
+  background: #f5f5f5;
+}
+
+
+.chart-text:focus {
+  background: white;
+
+  outline: 2px solid #90caf9;
+}
+
+
+.chart-mobility {
+  color: #e53935;
+
+  font-weight: bold;
+}
+
+
+
+/* =========================================
+   DELETE CHART LINE
+========================================= */
+
+.delete-chart-line {
+  flex-shrink: 0;
+
+  width: 26px;
+  height: 26px;
+
+  padding: 0;
+
+  border: 1px solid #c62828;
+
+  border-radius: 4px;
+
+  background: white;
+
+  color: #c62828;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 18px;
+
+  font-weight: bold;
+
+  line-height: 22px;
+
+  cursor: pointer;
+}
+
+
+.delete-chart-line:hover {
+  background: #c62828;
+
+  color: white;
+}
+
+
+
+/* =========================================
+   CHART CONTROLS
+========================================= */
+
+.chart-controls button {
+  padding: 6px 14px;
+
+  margin-right: 5px;
+
+  border: 1px solid #777;
+
+  border-radius: 999px;
+
+  background: white;
+
+  font-family: Arial, sans-serif;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.chart-controls button:hover {
+  background: #eeeeee;
+}
+
+
+#copyMessage {
+  margin-top: 8px;
+
+  min-height: 20px;
+
+  font-family: Arial, sans-serif;
+
+  font-weight: bold;
+}

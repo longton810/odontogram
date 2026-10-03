@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Dental Odontogram</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+</head>
+
+
+<body>
+
+  <!-- =====================================
+       ODONTOGRAM
+  ====================================== -->
+
+  <div class="odontogram-grid">
+
+    <div
+      class="arch"
+      id="maxillary">
+    </div>
+
+
+    <div class="quadrant-horizontal-line">
+    </div>
+
+
+    <div
+      class="arch"
+      id="mandibular">
+    </div>
+
+
+    <div class="main-odontogram-controls">
+
+      <button
+        id="missingMain"
+        class="finding whole-finding btn-missing"
+        data-name="missing">
+        Missing
+      </button>
+
+
+      <button
+        id="changeAge"
+        class="main-control-button">
+        Change Age
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <hr>
+
+
+  <!-- =====================================
+       FINDINGS
+  ====================================== -->
+
+  <h2>Findings</h2>
+
+
+  <div class="finding-section">
+
+
+    <!-- CARIES -->
+
+    <div class="finding-row">
+
+      <span class="finding-label">
+        Caries:
+      </span>
+
+      <button
+        class="finding surface-finding btn-caries btn-featured"
+        data-name="cavity">
+        Cavity
+      </button>
+
+      <button
+        class="finding surface-finding btn-stain"
+        data-name="stain">
+        Stain
+      </button>
+
+      <button
+        class="finding surface-finding btn-incipient"
+        data-name="incipient caries">
+        Incipient Caries
+      </button>
+
+      <button
+        class="finding surface-finding btn-recurrent"
+        data-name="recurrent caries">
+        Recurrent Caries
+      </button>
+
+      <button
+        class="finding surface-finding btn-gross"
+        data-name="gross caries">
+        Gross Caries
+      </button>
+
+    </div>
+
+
+
+    <!-- FILLING -->
+
+    <div class="finding-row">
+
+      <span class="finding-label">
+        Filling:
+      </span>
+
+      <button
+        class="finding surface-finding btn-composite btn-featured"
+        data-name="composite">
+        Composite
+      </button>
+
+      <button
+        class="finding surface-finding btn-amalgam"
+        data-name="amalgam">
+        Amalgam
+      </button>
+
+      <button
+        class="finding surface-finding btn-sealant"
+        data-name="sealant">
+        Sealant
+      </button>
+
+      <button
+        class="finding surface-finding btn-irm"
+        data-name="IRM">
+        IRM
+      </button>
+
+    </div>
+
+
+
+    <!-- NON-CARIOUS -->
+
+    <div class="finding-row">
+
+      <span class="finding-label">
+        Non-carious:
+      </span>
+
+      <button
+        class="finding surface-finding btn-wear"
+        data-name="wear">
+        Wear
+      </button>
+
+      <button
+        class="finding surface-finding btn-abfraction"
+        data-name="abfraction">
+        Abfraction
+      </button>
+
+      <button
+        class="finding surface-finding btn-erosion"
+        data-name="erosion">
+        Erosion
+      </button>
+
+      <button
+        class="finding surface-finding btn-crack"
+        data-name="crack line">
+        Crack Line
+      </button>
+
+      <button
+        class="finding surface-finding btn-broken"
+        data-name="broken">
+        Broken
+      </button>
+
+    </div>
+
+
+
+    <!-- CROWN / FPD -->
+
+    <div class="finding-row">
+
+      <span class="finding-label">
+        Crown/FPD:
+      </span>
+
+      <button
+        class="finding whole-finding btn-zirconia"
+        data-name="Zirconia crown">
+        Zirconia
+      </button>
+
+      <button
+        class="finding whole-finding btn-pfm"
+        data-name="PFM crown">
+        PFM
+      </button>
+
+      <button
+        class="finding whole-finding btn-metal"
+        data-name="Metal crown">
+        Metal
+      </button>
+
+      <button
+        class="finding whole-finding btn-bridge"
+        data-name="Bridge">
+        Bridge
+      </button>
+
+    </div>
+
+
+
+    <!-- OTHER -->
+
+    <div class="finding-row">
+
+      <span class="finding-label">
+        Other:
+      </span>
+
+      <button
+        class="finding whole-finding btn-rct"
+        data-name="RCT">
+        RCT
+      </button>
+
+      <button
+        class="finding whole-finding btn-post-core"
+        data-name="post & core">
+        Post & Core
+      </button>
+
+      <button
+        class="finding whole-finding btn-implant"
+        data-name="implant">
+        Implant
+      </button>
+
+      <button
+        class="finding whole-finding btn-root-tip"
+        data-name="root tip">
+        Root Tip
+      </button>
+
+    </div>
+
+
+
+    <!-- POSITION -->
+
+    <div class="finding-row">
+
+      <span class="finding-label">
+        Position:
+      </span>
+
+      <button
+        class="finding whole-finding position-button"
+        data-name="mobility">
+        Mobility
+      </button>
+
+      <button
+        class="finding whole-finding position-button"
+        data-name="tilted">
+        Tilted
+      </button>
+
+      <button
+        class="finding whole-finding position-button"
+        data-name="rotated">
+        Rotated
+      </button>
+
+      <button
+        class="finding whole-finding position-button"
+        data-name="super-eruption">
+        Super-eruption
+      </button>
+
+      <button
+        class="finding whole-finding position-button"
+        data-name="erupting">
+        Erupting
+      </button>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- =====================================
+       CHART
+  ====================================== -->
+
+  <h2>Chart</h2>
+
+
+  <div id="output">
+  </div>
+
+
+  <div class="chart-controls">
+
+    <button id="copyChart">
+      Copy Chart
+    </button>
+
+    <button id="undo">
+      Undo Last
+    </button>
+
+  </div>
+
+
+  <div id="copyMessage">
+  </div>
+
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
