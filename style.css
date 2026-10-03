@@ -968,27 +968,3 @@ text:not(.cervical-label) {
 
   font-weight: bold;
 }
-.clear-all-section {
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid #ddd;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.clear-all-btn {
-  background-color: white;
-  color: #c62828;
-  border: 2px solid #c62828;
-  border-radius: 6px;
-  padding: 8px 18px;
-  font-family: Arial, sans-serif;
-  font-size: 14px;
-  font-weight: normal;
-  cursor: pointer;
-}
-
-.clear-all-btn:hover {
-  background-color: #c62828;
-  color: white;
-}
