@@ -545,16 +545,27 @@ function formatSurfaceText(surfaces) {
 
 function highlightMobility(element) {
   const originalText = element.textContent;
-  const parts = originalText.split(/(mobility)/gi);
-  element.innerHTML = "";
-  parts.forEach(part => {
-    if (part.toLowerCase() === "mobility") {
-      const mobility = document.createElement("span");
-      mobility.className = "chart-mobility";
-      mobility.textContent = part;
-      element.appendChild(mobility);
+  element.textContent = "";
+  const appendText = (parent, value) => {
+    value.split(/(mobility)/gi).forEach(part => {
+      if (part.toLowerCase() === "mobility") {
+        const mobility = document.createElement("span");
+        mobility.className = "chart-mobility";
+        mobility.textContent = part;
+        parent.appendChild(mobility);
+      } else {
+        parent.appendChild(document.createTextNode(part));
+      }
+    });
+  };
+  originalText.split(/(\[[^\]]*\])/g).forEach(part => {
+    if (part.startsWith("[") && part.endsWith("]")) {
+      const treatment = document.createElement("strong");
+      treatment.style.fontWeight = "700";
+      appendText(treatment, part);
+      element.appendChild(treatment);
     } else {
-      element.appendChild(document.createTextNode(part));
+      appendText(element, part);
     }
   });
 }
@@ -684,18 +695,56 @@ byId("undo").addEventListener( "click", () => {
   renderFindings();
   renderChart();
 });
-byId("copyChart").addEventListener( "click", () => {
-  const entries = all("#output .chart-text");
-  if (entries.length === 0) {
+byId("copyChart").addEventListener("click", async () => {
+  const entries = [...all("#output .chart-text")];
+  if (!entries.length) {
     alert("The chart is empty.");
     return;
   }
-  const text = Array.from(entries) .map((entry) => entry.textContent) .join("\n");
-  navigator.clipboard.writeText(text).then(() => {
-    const message = byId("copyMessage");
-    message.textContent = "Chart copied!";
-    setTimeout(() => { message.textContent = ""; }, 2000);
+  const plain = entries.map(entry => entry.textContent).join("\n");
+  const formatted = document.createElement("div");
+  const copyTextStyle = (source, target) => {
+    const style = getComputedStyle(source);
+    ["fontFamily", "fontSize", "fontWeight", "fontStyle", "color",
+      "textDecoration", "lineHeight", "letterSpacing"].forEach(property => {
+      target.style[property] = style[property];
+    });
+  };
+  entries.forEach(entry => {
+    const line = document.createElement("p");
+    line.style.margin = "0";
+    line.textContent = entry.textContent;
+    copyTextStyle(entry, line);
+    highlightMobility(line);
+    const mobilityStyle = entry.querySelector(".chart-mobility");
+    if (mobilityStyle) {
+      line.querySelectorAll(".chart-mobility").forEach(span => {
+        copyTextStyle(mobilityStyle, span);
+      });
+    }
+    formatted.appendChild(line);
   });
+  const message = byId("copyMessage");
+  try {
+    let rich = false;
+    if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({
+          "text/plain": new Blob([plain], { type: "text/plain" }),
+          "text/html": new Blob([formatted.innerHTML], { type: "text/html" })
+        })]);
+        rich = true;
+      } catch (error) {
+        await navigator.clipboard.writeText(plain);
+      }
+    } else {
+      await navigator.clipboard.writeText(plain);
+    }
+    message.textContent = rich ? "Chart copied with formatting!" : "Chart copied as plain text.";
+    setTimeout(() => { message.textContent = ""; }, 2000);
+  } catch (error) {
+    message.textContent = "Copy unavailable. Select the chart text and copy it manually.";
+  }
 });
 
 const findingShortcuts = {
@@ -863,7 +912,7 @@ if (odontogram && treatmentPanel) {
       padding: 3px 8px;
       border: 1px solid rgba(118, 145, 175, .3);
       border-radius: 12px;
-      background: rgba(245, 250, 255, .92);
+      background: rgba(255, 249, 214, .92);
       backdrop-filter: blur(14px);
       box-shadow: 0 3px 12px rgba(30, 60, 100, .1);
       color: #203653;
@@ -917,6 +966,8 @@ if (odontogram && treatmentPanel) {
     return {
       findings: JSON.parse(JSON.stringify(findings)),
       chartEdits: { ...chartEdits },
+      chartLines: [...document.querySelectorAll("#output .chart-text")]
+        .map(line => line.textContent),
       nextBatchId,
       teeth: [...document.querySelectorAll(".tooth")].map(tooth => ({
         number: Number(tooth.dataset.tooth),
@@ -958,6 +1009,7 @@ if (odontogram && treatmentPanel) {
 
   function show(message, canUndo = true) {
     text.textContent = message;
+    highlightMobility(text);
     text.title = message;
     undo.disabled = !canUndo;
     notice.hidden = false;
@@ -1057,6 +1109,10 @@ if (odontogram && treatmentPanel) {
       const detail = (surface ? surface + " " : "") + name;
       return `${selection.label}: ${action.button.matches(".treatment") ? "[" + detail + "]" : detail}`;
     }).join("; ");
+    const changedLines = after.chartLines.filter(line =>
+      !action.before.chartLines.includes(line)
+    );
+    if (changedLines.length) action.message = changedLines.join("; ");
     history.push(action);
     show(action.message);
   });
