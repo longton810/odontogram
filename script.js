@@ -1,3 +1,64 @@
+const chartTagStyle = document.createElement("style");
+chartTagStyle.textContent = `
+  .chart-entry.chart-tag-entry { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+  .chart-tag-list { display: block; }
+  .chart-tag-list > .chart-tag { margin: 2px 0; vertical-align: middle; }
+  .chart-inline-text { display: inline-block; min-width: 7px; min-height: 1em;
+    vertical-align: middle; white-space: pre-wrap; outline: none; }
+  .chart-inline-text:focus { box-shadow: 0 1px 0 #8197b4; }
+  .chart-treatment-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start; gap: 18px; width: 100%; max-width: 1450px;
+    margin-top: 18px; padding: 0; border: 0; }
+  .chart-treatment-layout > .clinical-panel {
+    min-width: 0; margin: 0; padding: 14px; box-sizing: border-box;
+    border: 1px solid var(--glass-border, rgba(118,145,175,.3));
+    border-radius: 18px; background: var(--glass, rgba(245,250,255,.8));
+  }
+  .chart-treatment-layout .chart-side-panel #output {
+    border: 0; background: transparent; box-shadow: none; padding: 0;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+  .chart-treatment-layout .treatment-section {
+    display: flex; flex-direction: column; gap: 6px; padding: 0;
+    border: 0; background: transparent; box-shadow: none;
+  }
+  .chart-treatment-layout .treatment-section .category-pair { display: contents; }
+  .chart-treatment-layout .treatment-section .finding-row {
+    display: flex; flex: 0 0 auto; width: 100%; box-sizing: border-box;
+    flex-wrap: wrap; align-items: center; gap: 4px; margin: 0;
+  }
+  .chart-treatment-layout .treatment-section .finding-row::after { content: none; }
+  .chart-treatment-layout h2 { margin: 0 0 8px; }
+  .chart-treatment-layout .chart-side-panel #output { width: 100%; max-width: 100%; box-sizing: border-box; }
+  .chart-treatment-layout > .sticky-treatment-panel {
+    position: sticky; top: 16px; align-self: start;
+    max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px);
+    overflow-y: auto; box-shadow: var(--panel-shadow, 0 8px 24px rgba(30,60,100,.08));
+    backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+  }
+  @media (max-width: 850px) {
+    .chart-treatment-layout { grid-template-columns: 1fr; }
+    .chart-treatment-layout > .sticky-treatment-panel { position: static; max-height: none; }
+  }
+  .chart-tooth-label { font-weight: 700; margin-right: 3px; }
+  .chart-tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 7px;
+    border: 1px solid rgba(118,145,175,.3); border-radius: 9px;
+    background: rgba(245,250,255,.85); }
+  .chart-treatment-tag { background: rgba(255,249,214,.85); }
+  .chart-tag-text { outline: none; }
+  .chart-finding-select, .chart-tooth-label { font: inherit; color: inherit; cursor: pointer; }
+  .chart-finding-select { padding: 0; border: 0; background: transparent; }
+  .chart-tooth-label { font-weight: 700; }
+  .chart-finding-select.selected { color: #1d5bbb; text-decoration: underline; }
+  .chart-tooth-label.selected { border-color: #548de0; background: #e3efff; }
+  .chart-finding-select:focus-visible, .chart-tooth-label:focus-visible { outline: 2px solid #548de0; }
+  .delete-chart-tag { flex: none; border: 0; background: transparent; padding: 0 2px;
+    color: #65758a; font: bold 13px/1 Arial,sans-serif; cursor: pointer; }
+  .delete-chart-tag:hover { color: #c62828; }
+  .chart-saved-note { font: inherit; color: inherit; }
+`;
+document.head.append(chartTagStyle);
+
 const query = selector => document.querySelector(selector);
 const all = selector => document.querySelectorAll(selector);
 const byId = id => document.getElementById(id);
@@ -35,6 +96,7 @@ let selections = [];
 let findings = [];
 let nextBatchId = 1;
 let chartEdits = {};
+let nextChartTagId = 1;
 const anteriorTeeth = [ 6, 7, 8, 9, 10, 11, 22, 23, 24, 25, 26, 27 ];
 const maxillaryTeeth = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 ];
 const mandibularTeeth = [ 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17 ];
@@ -222,7 +284,7 @@ function hasSurfaceSelections() {
 }
 
 function clearTemporarySelection() {
-  all(".surface.selected, .tooth-number.selected")
+  all(".surface.selected, .tooth-number.selected, .chart-finding-select.selected, .chart-tooth-label.selected")
   .forEach(element => element.classList.remove("selected"));
 }
 
@@ -246,6 +308,7 @@ function updateFindingButtons() {
   const missingButton = byId("missingMain");
   missingButton.textContent = unmissing ? "(M) Unmissing" : "(M) Missing";
   missingButton.dataset.name = unmissing ? "unmissing" : "missing";
+  syncChartTagSelections();
 }
 all(".finding").forEach(function(button) {
   button.addEventListener("click", function() {
@@ -580,6 +643,176 @@ function formatTreatmentRecord(record) {
   return recordText(record);
 }
 
+// Chart tags keep deletion controls out of copied text and notifications.
+function chartLineText(element) {
+  return element.dataset.copyText ?? element.textContent;
+}
+
+function syncChartTagSelections() {
+  all(".chart-tooth-label").forEach(button => {
+    const selected = selections.some(item => item.whole && item.tooth === Number(button.dataset.tooth));
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  all(".chart-finding-select").forEach(button => {
+    const surfaces = JSON.parse(button.dataset.surfaces);
+    const whole = button.dataset.whole === "true";
+    const selected = selections.some(item => item.tooth === Number(button.dataset.tooth) &&
+      item.whole === whole && (whole || (surfaces.length && surfaces.every(surface => item.surfaces.includes(surface)))));
+    button.classList.toggle("selected", !!selected);
+    button.setAttribute("aria-pressed", String(!!selected));
+  });
+}
+
+function selectChartTarget(tooth, whole, surfaces = []) {
+  if ((whole && hasSurfaceSelections()) || (!whole && hasWholeSelections())) selections = [];
+  let selected = selections.find(item => item.tooth === tooth && item.whole === whole);
+  if (whole) {
+    if (selected) selections = selections.filter(item => item !== selected);
+    else selections.push({ tooth, surfaces: [], whole: true });
+  } else if (surfaces.length) {
+    if (!selected) {
+      selected = { tooth, surfaces: [], whole: false };
+      selections.push(selected);
+    }
+    if (surfaces.every(surface => selected.surfaces.includes(surface))) {
+      selected.surfaces = selected.surfaces.filter(surface => !surfaces.includes(surface));
+    } else selected.surfaces = [...new Set([...selected.surfaces, ...surfaces])];
+    if (!selected.surfaces.length) selections = selections.filter(item => item !== selected);
+  }
+  clearTemporarySelection();
+  selections.forEach(item => {
+    if (item.whole) query(`.tooth-number[data-tooth="${item.tooth}"]`)?.classList.add("selected");
+    else item.surfaces.forEach(surface => {
+      query(`.tooth-diagram[data-tooth="${item.tooth}"] .surface[data-surface="${surface}"]`)?.classList.add("selected");
+    });
+  });
+  updateFindingButtons();
+}
+
+function createTagChartLine(group) {
+  const entry = document.createElement("div");
+  entry.className = "chart-entry chart-tag-entry";
+  const line = document.createElement("div");
+  line.className = "chart-text chart-tag-list";
+  line.contentEditable = "false";
+  const label = document.createElement("button");
+  label.type = "button";
+  label.contentEditable = "false";
+  label.className = "chart-tooth-label chart-tag";
+  label.dataset.tooth = group.tooth;
+  label.textContent = group.label;
+  label.setAttribute("aria-label", "Select tooth " + group.label);
+  label.addEventListener("click", () => selectChartTarget(group.tooth, true));
+  line.append(label, document.createTextNode(":"));
+  const editKey = "tooth-" + group.tooth + "-" + group.label;
+  const ordered = [...group.records].sort((a, b) => Number(!!a.treatment) - Number(!!b.treatment));
+  const parts = [];
+  const cleanText = value => value.replace(/\u200b/g, "");
+  const syncText = () => {
+    line.dataset.copyText = group.label + ":" + parts.map(part =>
+      part.gap ? cleanText(part.element.textContent) :
+      (part.record.treatment ? "[" + part.element.textContent + "]" : part.element.textContent)
+    ).join("");
+  };
+  const createGap = (key, fallback) => {
+    const gap = document.createElement("span");
+    gap.className = "chart-inline-text";
+    gap.contentEditable = "true";
+    gap.spellcheck = true;
+    gap.setAttribute("role", "textbox");
+    gap.setAttribute("aria-label", "Text between tags for " + group.label);
+    gap.textContent = chartEdits[key] ?? fallback;
+    const saveText = () => {
+      chartEdits[key] = cleanText(gap.textContent);
+      delete chartEdits[editKey];
+      syncText();
+    };
+    gap.addEventListener("input", saveText);
+    gap.addEventListener("blur", () => {
+      saveText();
+      saveOdontogram();
+    });
+    parts.push({ gap: true, element: gap });
+    line.append(gap);
+    return gap;
+  };
+
+  ordered.forEach((record, index) => {
+    // IDs are saved with the chart so individual tag edits survive a reload.
+    if (!record.chartTagId) {
+      let id;
+      do { id = "chart-tag-" + nextChartTagId++; }
+      while (findings.some(item => item.chartTagId === id));
+      record.chartTagId = id;
+    }
+    createGap(editKey + "-gap-before-" + record.chartTagId,
+      index === 0 || record.treatment ? " " : "; ");
+    const tag = document.createElement("span");
+    tag.contentEditable = "false";
+    tag.className = "chart-tag" + (record.treatment ? " chart-treatment-tag" : "");
+    const text = document.createElement(record.treatment ? "span" : "button");
+    text.className = "chart-tag-text" + (record.treatment ? "" : " chart-finding-select");
+    text.contentEditable = "false";
+    if (!record.treatment) {
+      text.type = "button";
+      text.dataset.tooth = record.tooth;
+      text.dataset.whole = String(record.whole);
+      text.dataset.surfaces = JSON.stringify(record.surfaces);
+      text.setAttribute("aria-label", "Select " + recordText(record) + " on " + group.label);
+      text.addEventListener("click", () => selectChartTarget(record.tooth, record.whole, record.surfaces));
+    }
+    const defaultText = !record.treatment && ["Bridge", "bridge"].includes(record.finding)
+      ? "bridge (" + (record.bridgeTeeth || [record.tooth]).map(getToothLabel).join("–") + ")"
+      : record.treatment ? formatTreatmentRecord(record) : recordText(record);
+    text.textContent = chartEdits[record.chartTagId] ?? defaultText;
+    highlightMobility(text);
+    parts.push({ record, element: text });
+    if (record.treatment) {
+      const treatment = document.createElement("strong");
+      treatment.style.fontWeight = "700";
+      treatment.append(document.createTextNode("["), text, document.createTextNode("]"));
+      tag.append(treatment);
+    } else tag.append(text);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "delete-chart-tag";
+    remove.textContent = "×";
+    remove.title = "Delete " + defaultText + " from " + group.label;
+    remove.setAttribute("aria-label", remove.title);
+    remove.addEventListener("click", () => {
+      // Preserve text beside a deleted tag by carrying it to the next gap.
+      const gapKey = editKey + "-gap-before-" + record.chartTagId;
+      const next = ordered[ordered.indexOf(record) + 1];
+      const nextKey = next ? editKey + "-gap-before-" + next.chartTagId : editKey + "-notes";
+      if (chartEdits[gapKey]?.trim()) {
+        chartEdits[nextKey] = chartEdits[gapKey] + (chartEdits[nextKey] ?? " ");
+      }
+      delete chartEdits[gapKey];
+      findings = findings.filter(item => item !== record);
+      if (record.treatment && ["Bridge", "bridge"].includes(record.finding)) {
+        findings.filter(item => item.treatment && item.batchId === record.batchId &&
+          ["Bridge", "bridge"].includes(item.finding)).forEach(item => {
+          item.bridgeTeeth = (item.bridgeTeeth || [item.tooth])
+            .filter(number => number !== record.tooth);
+        });
+      }
+      delete chartEdits[record.chartTagId];
+      delete chartEdits[editKey];
+      delete chartEdits["missing-teeth"];
+      refreshChart();
+    });
+    tag.append(remove);
+    line.append(tag);
+  });
+  entry.append(line);
+
+  // The trailing space is part of the line, without a separate notes field.
+  createGap(editKey + "-notes", chartEdits[editKey] ?? " ");
+  syncText();
+  return entry;
+}
+
 function createChartLine(editKey, defaultText, removeRecords) {
   const entry = document.createElement("div");
   entry.className = "chart-entry";
@@ -633,32 +866,24 @@ function renderBridgeChart(output) {
 function renderChart() {
   const output = byId("output");
   output.innerHTML = "";
-  const missing = findings.filter((record) => !record.treatment && record.finding === "missing");
-  if (missing.length) {
-    const labels = [...new Set( missing.slice() .sort((a, b) => a.tooth - b.tooth) .map((record) => record.toothLabel || getToothLabel(record.tooth)) )];
-    output.appendChild( createChartLine( "missing-" + labels.join("|"), "Missing teeth: " + labels.join(", "), () => { findings = findings.filter((record) => !missing.includes(record)); }
-    ) );
-  }
-  renderBridgeChart(output);
-  const groups = {};
-  findings.filter((record) => record.treatment || ( !["Bridge", "bridge"].includes(record.finding) && record.finding !== "missing" )).forEach(record => {
+  const groups = new Map();
+  findings.forEach(record => {
     const label = record.toothLabel || getToothLabel(record.tooth);
     const key = record.tooth + "|" + label;
-    if (!groups[key]) {
-      groups[key] = {
-        tooth: record.tooth, label, records: [] };
-    }
-    groups[key].records.push(record);
+    if (!groups.has(key)) groups.set(key, { tooth: record.tooth, label, records: [] });
+    groups.get(key).records.push(record);
   });
-  Object.values(groups)
-  .sort((a, b) => a.tooth - b.tooth)
-  .forEach(group => {
-    const findingText = group.records .filter((record) => !record.treatment) .map(formatChartRecord) .join("; ");
-    const treatmentText = group.records .filter((record) => record.treatment) .map(formatTreatmentRecord) .join("; ");
-    const text = group.label + (findingText ? ": " + findingText : "") + (treatmentText ? " [" + treatmentText + "]" : "");
-    output.appendChild( createChartLine( "tooth-" + group.tooth + "-" + group.label, text, () => { findings = findings.filter((record) => !group.records.includes(record)); }
-    ) );
+  Object.entries(chartEdits).forEach(([key, value]) => {
+    const match = key.match(/^tooth-(\d+)-(.+)-notes$/);
+    if (!match || !value.trim()) return;
+    const tooth = Number(match[1]);
+    const label = match[2];
+    const groupKey = tooth + "|" + label;
+    if (!groups.has(groupKey)) groups.set(groupKey, { tooth, label, records: [] });
   });
+  [...groups.values()].sort((a, b) => a.tooth - b.tooth)
+    .forEach(group => output.append(createTagChartLine(group)));
+  syncChartTagSelections();
 }
 
 function renderMissingChart(output) {
@@ -701,7 +926,7 @@ byId("copyChart").addEventListener("click", async () => {
     alert("The chart is empty.");
     return;
   }
-  const plain = entries.map(entry => entry.textContent).join("\n");
+  const plain = entries.map(chartLineText).join("\n");
   const formatted = document.createElement("div");
   const copyTextStyle = (source, target) => {
     const style = getComputedStyle(source);
@@ -713,7 +938,7 @@ byId("copyChart").addEventListener("click", async () => {
   entries.forEach(entry => {
     const line = document.createElement("p");
     line.style.margin = "0";
-    line.textContent = entry.textContent;
+    line.textContent = chartLineText(entry);
     copyTextStyle(entry, line);
     highlightMobility(line);
     const mobilityStyle = entry.querySelector(".chart-mobility");
@@ -833,8 +1058,8 @@ renderChart = () => {
   renderChartBeforeAutosave();
   saveOdontogram();
 };
-document.addEventListener("input", event => { if (event.target.closest(".chart-text")) saveOdontogram(); });
-document.addEventListener("focusout", event => { if (event.target.closest(".chart-text")) saveOdontogram(); });
+document.addEventListener("input", event => { if (event.target.closest(".chart-text, .chart-saved-note")) saveOdontogram(); });
+document.addEventListener("focusout", event => { if (event.target.closest(".chart-text, .chart-saved-note")) saveOdontogram(); });
 window.addEventListener("pagehide", saveOdontogram);
 
 restoreOdontogram();
@@ -967,7 +1192,7 @@ if (odontogram && treatmentPanel) {
       findings: JSON.parse(JSON.stringify(findings)),
       chartEdits: { ...chartEdits },
       chartLines: [...document.querySelectorAll("#output .chart-text")]
-        .map(line => line.textContent),
+        .map(chartLineText),
       nextBatchId,
       teeth: [...document.querySelectorAll(".tooth")].map(tooth => ({
         number: Number(tooth.dataset.tooth),
@@ -1071,7 +1296,7 @@ if (odontogram && treatmentPanel) {
       } else reset();
       return;
     }
-    if (button.matches("#confirmClearAll, .delete-chart-line, .dentition-button")) {
+    if (button.matches("#confirmClearAll, .delete-chart-line, .delete-chart-tag, .dentition-button")) {
       reset();
       return;
     }
@@ -1119,6 +1344,30 @@ if (odontogram && treatmentPanel) {
 
   // Later manual edits should remain intact when using the original chart Undo.
   document.addEventListener("input", event => {
-    if (event.target.closest(".chart-text")) reset();
+    if (event.target.closest(".chart-text, .chart-saved-note")) reset();
   });
+})();
+
+// Keep Chart and Suggested treatment in separate panels outside the odontogram.
+(() => {
+  const treatment = document.querySelector(".treatment-section")?.closest(".clinical-panel");
+  const output = document.getElementById("output");
+  const heading = [...document.querySelectorAll("h2")].find(item => item.textContent.trim() === "Chart");
+  const grid = document.querySelector(".odontogram-grid");
+  if (!treatment || !output || !grid) return;
+  const layout = document.createElement("div");
+  layout.className = "chart-treatment-layout";
+  const chart = document.createElement("section");
+  chart.className = "clinical-panel chart-side-panel";
+  if (heading) chart.append(heading);
+  chart.append(output);
+  [".chart-controls", "#copyMessage", "#autosaveMessage", ".clear-all-area"]
+    .forEach(selector => {
+      const element = document.querySelector(selector);
+      if (element) chart.append(element);
+    });
+  document.querySelectorAll(".treatment-divider").forEach(divider => divider.remove());
+  treatment.classList.add("sticky-treatment-panel");
+  layout.append(chart, treatment);
+  grid.after(layout);
 })();
