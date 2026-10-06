@@ -1,311 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dental Odontogram</title>
-
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
+  <link rel="stylesheet" href="style.css">
 </head>
-
-
 <body>
-
-  <!-- =====================================
-       ODONTOGRAM
-  ====================================== -->
-
   <div class="odontogram-grid">
-    <div class="dentition-controls" aria-label="Dentition">
-      <button type="button" class="dentition-button active" data-dentition="permanent" aria-pressed="true">Full permanent</button>
-      <button type="button" class="dentition-button" data-dentition="primary" aria-pressed="false">Full primary</button>
-      <button type="button" class="dentition-button" data-dentition="mixed" aria-pressed="false">Mixed</button>
+    <div class="dentition-canvas">
+      <div class="dentition-controls" aria-label="Dentition">
+        <button type="button" class="dentition-button active" data-dentition="permanent" aria-pressed="true">Full permanent</button>
+        <button type="button" class="dentition-button" data-dentition="primary" aria-pressed="false">Full primary</button>
+        <button type="button" class="dentition-button" data-dentition="mixed" aria-pressed="false">Mixed</button>
+      </div>
+      <div class="arch" id="maxillary"></div>
+      <div class="quadrant-horizontal-line"></div>
+      <div class="arch" id="mandibular"></div>
+      <div class="main-odontogram-controls">
+        <button id="missingMain" class="finding whole-finding btn-missing" data-name="missing" aria-keyshortcuts="m">(M) Missing</button>
+        <button id="changeAge" class="main-control-button">Change Age</button>
+      </div>
     </div>
-
-    <div
-      class="arch"
-      id="maxillary">
-    </div>
-
-
-    <div class="quadrant-horizontal-line">
-    </div>
-
-
-    <div
-      class="arch"
-      id="mandibular">
-    </div>
-
-
-    <div class="main-odontogram-controls">
-
-      <button
-        id="missingMain"
-        class="finding whole-finding btn-missing"
-        data-name="missing" aria-keyshortcuts="m">(M) Missing</button>
-
-
-      <button
-        id="changeAge"
-        class="main-control-button">Change Age</button>
-
-    </div>
-
+    <section class="clinical-panel odontogram-findings">
+      <h2>Findings</h2>
+      <div class="finding-section">
+        <div class="finding-row"><span class="finding-label">Caries:</span>
+          <button class="finding surface-finding btn-caries" data-name="decay" aria-keyshortcuts="d">(D) Decay</button>
+          <button class="finding surface-finding btn-decalcified" data-name="decalcified">Decalcified</button>
+          <button class="finding surface-finding btn-stain" data-name="stain">Stain</button>
+          <button class="finding surface-finding btn-incipient" data-name="incipient caries" aria-keyshortcuts="i">(I) Incipient</button>
+          <button class="finding surface-finding btn-recurrent" data-name="recurrent caries">Recurrent</button>
+          <button class="finding surface-finding btn-gross" data-name="gross caries">Gross</button>
+        </div>
+        <div class="finding-row"><span class="finding-label">Material:</span>
+          <button class="finding surface-finding btn-composite" data-name="composite" aria-keyshortcuts="c">(C) Composite</button>
+          <button class="finding surface-finding btn-amalgam" data-name="amalgam" aria-keyshortcuts="a">(A) Amalgam</button>
+          <button class="finding surface-finding btn-sealant" data-name="sealant">Sealant</button>
+          <button class="finding surface-finding btn-irm" data-name="IRM">IRM</button>
+          <button class="finding whole-finding btn-ssc" data-name="SSC">SSC</button>
+          <button class="finding whole-finding btn-zirconia" data-name="Zirconia crown" aria-keyshortcuts="z">(Z) Zirconia</button>
+          <button class="finding whole-finding btn-pfm" data-name="PFM crown" aria-keyshortcuts="p">(P) PFM</button>
+          <button class="finding whole-finding btn-metal" data-name="Metal crown">Metal</button>
+          <button class="finding whole-finding btn-bridge" data-name="Bridge" aria-keyshortcuts="b">(B) Bridge</button>
+          <button class="finding whole-finding btn-implant" data-name="implant">Implant</button>
+        </div>
+        <div class="finding-row"><span class="finding-label">Endo:</span>
+          <button class="finding whole-finding btn-rct" data-name="RCT" aria-keyshortcuts="r">(R) RCT</button>
+          <button class="finding whole-finding btn-post-core" data-name="post & core">Post & Core</button>
+          <button class="finding whole-finding btn-root-tip" data-name="root tip" aria-keyshortcuts="t">(T) Root Tip</button>
+          <button class="finding whole-finding btn-parl" data-name="PARL">PARL</button>
+          <button class="finding whole-finding btn-paro" data-name="PARO">PARO</button>
+          <button class="finding whole-finding btn-ankylosis" data-name="ankylosis">Ankylosis</button>
+        </div>
+        <div class="finding-row"><span class="finding-label">Non-carious:</span>
+          <button class="finding surface-finding btn-wear" data-name="wear" aria-keyshortcuts="w">(W) Wear</button>
+          <button class="finding surface-finding btn-abfraction" data-name="abfraction">Abfraction</button>
+          <button class="finding surface-finding btn-erosion" data-name="erosion">Erosion</button>
+          <button class="finding surface-finding btn-crack" data-name="crack line">Crack Line</button>
+          <button class="finding surface-finding btn-broken" data-name="broken">Broken</button>
+        </div>
+        <div class="finding-row"><span class="finding-label">Position:</span>
+          <button class="finding whole-finding position-button" data-name="mobility">Mobility</button>
+          <button class="finding whole-finding position-button" data-name="tilted">Tilted</button>
+          <button class="finding whole-finding position-button" data-name="rotated">Rotated</button>
+          <button class="finding whole-finding position-button" data-name="super-eruption">Super-eruption</button>
+          <button class="finding whole-finding position-button" data-name="erupting">Erupting</button>
+        </div>
+      </div>
+    </section>
   </div>
-
-
-  <hr>
-
-
-  <!-- =====================================
-       FINDINGS
-  ====================================== -->
-
-  <div class="clinical-panels">
-  <section class="clinical-panel">
-  <h2>Findings</h2>
-
-
-  <div class="finding-section">
-
-    <div class="finding-row">
-
-      <span class="finding-label">
-        Caries:
-      </span>
-
-      <button
-        class="finding surface-finding btn-caries"
-        data-name="decay" aria-keyshortcuts="d">(D) Decay</button>
-
-      <button class="finding surface-finding btn-decalcified" data-name="decalcified">Decalcified</button>
-
-      <button
-        class="finding surface-finding btn-stain"
-        data-name="stain">Stain</button>
-
-      <button
-        class="finding surface-finding btn-incipient"
-        data-name="incipient caries" aria-keyshortcuts="i">(I) Incipient</button>
-
-      <button
-        class="finding surface-finding btn-recurrent"
-        data-name="recurrent caries">Recurrent</button>
-
-      <button
-        class="finding surface-finding btn-gross"
-        data-name="gross caries">Gross/Big caries</button>
-
-    </div>
-
-    <div class="finding-row">
-
-      <span class="finding-label">
-        Pre-existing filling:
-      </span>
-
-      <button
-        class="finding surface-finding btn-composite"
-        data-name="composite" aria-keyshortcuts="c">(C) Composite</button>
-
-      <button
-        class="finding surface-finding btn-amalgam"
-        data-name="amalgam" aria-keyshortcuts="a">(A) Amalgam</button>
-
-      <button
-        class="finding surface-finding btn-sealant"
-        data-name="sealant">Sealant</button>
-
-      <button
-        class="finding surface-finding btn-irm"
-        data-name="IRM">IRM</button>
-
-    </div>
-
-    <div class="finding-row">
-
-      <span class="finding-label">
-        Endo/Root:
-      </span>
-
-      <button
-        class="finding whole-finding btn-rct"
-        data-name="RCT" aria-keyshortcuts="r">(R) RCT</button>
-
-      <button
-        class="finding whole-finding btn-post-core"
-        data-name="post & core">Post & Core</button>
-
-
-
-      <button
-        class="finding whole-finding btn-root-tip"
-        data-name="root tip" aria-keyshortcuts="t">(T) Root Tip</button>
-      <button class="finding whole-finding btn-parl" data-name="PARL">PARL</button>
-      <button class="finding whole-finding btn-paro" data-name="PARO">PARO</button>
-      <button class="finding whole-finding btn-ankylosis" data-name="ankylosis">Ankylosis</button>
-
-    </div>
-
-    <div class="finding-row">
-
-      <span class="finding-label">
-        Crown/FPD/Implant:
-      </span>
-
-      <button
-        class="finding whole-finding btn-ssc"
-        data-name="SSC">SSC</button>
-
-      <button
-        class="finding whole-finding btn-zirconia"
-        data-name="Zirconia crown" aria-keyshortcuts="z">(Z) Zirconia</button>
-
-      <button
-        class="finding whole-finding btn-pfm"
-        data-name="PFM crown" aria-keyshortcuts="p">(P) PFM</button>
-
-      <button
-        class="finding whole-finding btn-metal"
-        data-name="Metal crown">Metal</button>
-
-      <button
-        class="finding whole-finding btn-bridge"
-        data-name="Bridge" aria-keyshortcuts="b">(B) Bridge</button>
-
-      <button
-        class="finding whole-finding btn-implant"
-        data-name="implant">Implant</button>
-
-    </div>
-
-    <div class="finding-row">
-
-      <span class="finding-label">
-        Non-carious:
-      </span>
-
-      <button
-        class="finding surface-finding btn-wear"
-        data-name="wear" aria-keyshortcuts="w">(W) Wear</button>
-
-      <button
-        class="finding surface-finding btn-abfraction"
-        data-name="abfraction">Abfraction</button>
-
-      <button
-        class="finding surface-finding btn-erosion"
-        data-name="erosion">Erosion</button>
-
-      <button
-        class="finding surface-finding btn-crack"
-        data-name="crack line">Crack Line</button>
-
-      <button
-        class="finding surface-finding btn-broken"
-        data-name="broken">Broken</button>
-
-    </div>
-
-    <div class="finding-row">
-
-      <span class="finding-label">
-        Position:
-      </span>
-
-      <button
-        class="finding whole-finding position-button"
-        data-name="mobility">Mobility</button>
-
-      <button
-        class="finding whole-finding position-button"
-        data-name="tilted">Tilted</button>
-
-      <button
-        class="finding whole-finding position-button"
-        data-name="rotated">Rotated</button>
-
-      <button
-        class="finding whole-finding position-button"
-        data-name="super-eruption">Super-eruption</button>
-
-      <button
-        class="finding whole-finding position-button"
-        data-name="erupting">Erupting</button>
-
-    </div>
-
+  <div class="clinical-panels treatment-panels">
+    <section class="clinical-panel">
+      <h2>Suggested treatment</h2>
+      <div class="treatment-section">
+        <div class="finding-row"><span class="finding-label">Conservative:</span>
+          <button type="button" class="treatment watch-treatment btn-watch" data-treatment="Watch">Watch</button>
+          <button type="button" class="treatment surface-treatment btn-sdf" data-treatment="SDF">SDF</button>
+        </div>
+        <div class="finding-row"><span class="finding-label">Filling:</span>
+          <button type="button" class="treatment surface-treatment btn-composite" data-treatment="Composite">Composite</button>
+          <button type="button" class="treatment surface-treatment btn-amalgam" data-treatment="Amalgam">Amalgam</button>
+          <button type="button" class="treatment surface-treatment btn-rmgi" data-treatment="RMGI">RMGI</button>
+          <button type="button" class="treatment surface-treatment btn-irm" data-treatment="IRM">IRM</button>
+        </div>
+        <div class="finding-row"><span class="finding-label">Endo:</span>
+          <button type="button" class="treatment whole-treatment btn-rct" data-treatment="Pulpotomy">Pulpotomy</button>
+          <button type="button" class="treatment whole-treatment btn-rct" data-treatment="RCT">RCT</button>
+          <button type="button" class="treatment whole-treatment btn-post-core" data-treatment="post & core">post & core</button>
+        </div>
+        <div class="finding-row"><span class="finding-label">Crown/FPD:</span>
+          <button type="button" class="treatment whole-treatment btn-cbu" data-treatment="CBU">CBU</button>
+          <button type="button" class="treatment whole-treatment btn-ssc" data-treatment="SSC">SSC</button>
+          <button type="button" class="treatment whole-treatment btn-zirconia" data-treatment="Zirconia">Zirconia</button>
+          <button type="button" class="treatment whole-treatment btn-pfm" data-treatment="PFM">PFM</button>
+          <button type="button" class="treatment whole-treatment btn-metal" data-treatment="Metal">Metal</button>
+          <button type="button" class="treatment whole-treatment btn-bridge" data-treatment="Bridge">Bridge</button>
+        </div>
+        <div class="finding-row"><span class="finding-label">OS:</span>
+          <button type="button" class="treatment whole-treatment btn-extraction" data-treatment="Extraction">Extraction</button>
+          <button type="button" class="treatment whole-treatment btn-lengthening" data-treatment="Crown lengthening">Crown lengthening</button>
+          <button type="button" class="treatment whole-treatment btn-implant" data-treatment="Implant">Implant</button>
+        </div>
+      </div>
+    </section>
   </div>
-
-  </section>
-  <section class="clinical-panel">
-    <h2>Suggested treatment</h2>
-    <div class="treatment-section">
-      <div class="finding-row"><span class="finding-label">Conservative:</span>
-        <button type="button" class="treatment watch-treatment btn-watch" data-treatment="Watch">Watch</button>
-        <button type="button" class="treatment surface-treatment btn-sdf" data-treatment="SDF">SDF</button>
-      </div>
-      <div class="finding-row"><span class="finding-label">Filling:</span>
-        <button type="button" class="treatment surface-treatment btn-composite" data-treatment="Composite">Composite</button>
-        <button type="button" class="treatment surface-treatment btn-amalgam" data-treatment="Amalgam">Amalgam</button>
-        <button type="button" class="treatment surface-treatment btn-rmgi" data-treatment="RMGI">RMGI</button>
-        <button type="button" class="treatment surface-treatment btn-irm" data-treatment="IRM">IRM</button>
-      </div>
-      <div class="finding-row"><span class="finding-label">Endo:</span>
-        <button type="button" class="treatment whole-treatment btn-rct" data-treatment="Pulpotomy">Pulpotomy</button>
-        <button type="button" class="treatment whole-treatment btn-rct" data-treatment="RCT">RCT</button>
-        <button type="button" class="treatment whole-treatment btn-post-core" data-treatment="post & core">post & core</button>
-      </div>
-      <div class="finding-row"><span class="finding-label">Crown/FPD:</span>
-        <button type="button" class="treatment whole-treatment btn-cbu" data-treatment="CBU">CBU</button>
-        <button type="button" class="treatment whole-treatment btn-ssc" data-treatment="SSC">SSC</button>
-        <button type="button" class="treatment whole-treatment btn-zirconia" data-treatment="Zirconia">Zirconia</button>
-        <button type="button" class="treatment whole-treatment btn-pfm" data-treatment="PFM">PFM</button>
-        <button type="button" class="treatment whole-treatment btn-metal" data-treatment="Metal">Metal</button>
-        <button type="button" class="treatment whole-treatment btn-bridge" data-treatment="Bridge">Bridge</button>
-      </div>
-      <div class="finding-row"><span class="finding-label">OS:</span>
-        <button type="button" class="treatment whole-treatment btn-extraction" data-treatment="Extraction">Extraction</button>
-        <button type="button" class="treatment whole-treatment btn-lengthening" data-treatment="Crown lengthening">Crown lengthening</button>
-        <button type="button" class="treatment whole-treatment btn-implant" data-treatment="Implant">Implant</button>
-      </div>
-    </div>
-  </section>
-  </div>
-
-  <!-- =====================================
-       CHART
-  ====================================== -->
-
   <h2>Chart</h2>
-
-
-  <div id="output">
-  </div>
-
-
+  <div id="output"></div>
   <div class="chart-controls">
-
     <button id="copyChart">Copy Chart</button>
-
     <button id="undo">Undo Last</button>
-
   </div>
-
-
-  <div id="copyMessage">
-  </div>
-
-
+  <div id="copyMessage"></div>
   <div class="clear-all-area">
     <button id="clearAll" type="button">Clear All</button>
   </div>
@@ -317,9 +123,6 @@
       <button id="confirmClearAll" type="button">Yes, delete all</button>
     </div>
   </dialog>
-
   <script src="script.js"></script>
-
 </body>
-
 </html>
