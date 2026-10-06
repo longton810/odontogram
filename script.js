@@ -232,6 +232,7 @@ function getToothLabel(toothNumber) {
 document.addEventListener("click", event => {
   const surface = event.target.closest(".surface");
   if (!surface) return;
+  selections.forEach(item => { delete item.chartFindings; });
   const svg = surface.closest(".tooth-diagram");
   const toothNumber = Number(svg.dataset.tooth);
   const surfaceName = surface.dataset.surface;
@@ -258,6 +259,7 @@ document.addEventListener("click", event => {
 document.addEventListener("click", event => {
   const number = event.target.closest(".tooth-number");
   if (!number) return;
+  selections.forEach(item => { delete item.chartFindings; });
   const toothNumber = Number(number.dataset.tooth);
   if (hasSurfaceSelections()) {
     clearTemporarySelection();
@@ -402,7 +404,7 @@ all(".treatment").forEach(button => {
     selections.forEach(selection => {
       const label = getToothLabel(selection.tooth);
       const record = {
-        tooth: selection.tooth, toothLabel: label, surfaces: [...selection.surfaces], whole: selection.whole, finding: button.dataset.treatment, treatment: true, bridgeTeeth, batchId };
+        tooth: selection.tooth, toothLabel: label, ...proximalFillingSurfaces(selection, button.dataset.treatment), whole: selection.whole, finding: button.dataset.treatment, treatment: true, bridgeTeeth, batchId };
       const duplicate = findings.some((r) => r.treatment && r.tooth === record.tooth && r.toothLabel === label && r.finding === record.finding && r.whole === record.whole && [...r.surfaces].sort().join(",") === [...record.surfaces].sort().join(","));
       if (!duplicate) findings.push(record);
       delete chartEdits[ "tooth-" + record.tooth + "-" + label ];
@@ -640,7 +642,24 @@ function formatChartRecord(record) {
 
 function formatTreatmentRecord(record) {
   if (["Bridge", "bridge"].includes(record.finding)) return isToothMissing(record.tooth) ? "FPD pontic" : "FPD abutment";
+  if (record.proximalDecayTreatment && !record.whole) {
+    const surface = formatSurfaceText(record.surfaces).replace(/^OD/, "DO");
+    return surface ? surface + " " + record.finding : record.finding;
+  }
   return recordText(record);
+}
+
+function proximalFillingSurfaces(selection, treatment) {
+  const surfaces = [...selection.surfaces];
+  const caries = ["decay", "caries", "cavity", "incipient caries", "recurrent caries", "gross caries"];
+  const proximalDecayTreatment = !selection.whole && ["Composite", "Amalgam"].includes(treatment) &&
+    (selection.chartFindings || []).some(record => caries.includes(record.finding) &&
+      record.surfaces.some(surface => ["M", "D"].includes(surface) && surfaces.includes(surface)));
+  if (proximalDecayTreatment) {
+    const extension = anteriorTeeth.includes(selection.tooth) ? "L" : "O";
+    if (!surfaces.includes(extension)) surfaces.push(extension);
+  }
+  return { surfaces, proximalDecayTreatment };
 }
 
 // Chart tags keep deletion controls out of copied text and notifications.
@@ -664,7 +683,7 @@ function syncChartTagSelections() {
   });
 }
 
-function selectChartTarget(tooth, whole, surfaces = []) {
+function selectChartTarget(tooth, whole, surfaces = [], finding = null) {
   if ((whole && hasSurfaceSelections()) || (!whole && hasWholeSelections())) selections = [];
   let selected = selections.find(item => item.tooth === tooth && item.whole === whole);
   if (whole) {
@@ -675,9 +694,18 @@ function selectChartTarget(tooth, whole, surfaces = []) {
       selected = { tooth, surfaces: [], whole: false };
       selections.push(selected);
     }
-    if (surfaces.every(surface => selected.surfaces.includes(surface))) {
+    const deselect = surfaces.every(surface => selected.surfaces.includes(surface));
+    if (deselect) {
       selected.surfaces = selected.surfaces.filter(surface => !surfaces.includes(surface));
-    } else selected.surfaces = [...new Set([...selected.surfaces, ...surfaces])];
+      selected.chartFindings = (selected.chartFindings || []).filter(item => item.id !== finding?.chartTagId);
+    } else {
+      selected.surfaces = [...new Set([...selected.surfaces, ...surfaces])];
+      if (finding) {
+        selected.chartFindings = [...(selected.chartFindings || []), {
+          id: finding.chartTagId, finding: finding.finding, surfaces: [...finding.surfaces]
+        }];
+      }
+    }
     if (!selected.surfaces.length) selections = selections.filter(item => item !== selected);
   }
   clearTemporarySelection();
@@ -760,7 +788,7 @@ function createTagChartLine(group) {
       text.dataset.whole = String(record.whole);
       text.dataset.surfaces = JSON.stringify(record.surfaces);
       text.setAttribute("aria-label", "Select " + recordText(record) + " on " + group.label);
-      text.addEventListener("click", () => selectChartTarget(record.tooth, record.whole, record.surfaces));
+      text.addEventListener("click", () => selectChartTarget(record.tooth, record.whole, record.surfaces, record));
     }
     const defaultText = !record.treatment && ["Bridge", "bridge"].includes(record.finding)
       ? "bridge (" + (record.bridgeTeeth || [record.tooth]).map(getToothLabel).join("–") + ")"
