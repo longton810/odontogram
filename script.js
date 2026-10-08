@@ -209,6 +209,7 @@ function createTooth(toothNumber) {
     </path>
     </svg>
     <div class="tooth-number" data-tooth="${toothNumber}" data-age="permanent" >#${toothNumber}</div>
+    <div class="tooth-findings-text" data-tooth="${toothNumber}"></div>
     <div class="root-markers" data-tooth="${toothNumber}" >
     </div>
     <div class="watch-marker" data-tooth="${toothNumber}" >
@@ -439,7 +440,7 @@ function renderFindings() {
     "recurrent caries": "recurrent-caries", "gross caries": "gross-caries", "composite": "composite",
     "amalgam": "amalgam", "sealant": "sealant", "IRM": "irm",
     "wear": "wear", "abfraction": "abfraction", "erosion": "erosion",
-    "crack line": "crack-line", "broken": "broken"
+    "crack line": "crack-line", "chipped": "chipped", "broken": "broken"
   };
   const wholeClasses = {
     "SSC": "ssc", "Zirconia crown": "zirconia-crown", "PFM crown": "pfm-crown",
@@ -519,8 +520,42 @@ function renderFindings() {
       if ( ["composite", "amalgam", "sealant", "IRM"] .includes(record.finding) && color ) surface.style.fill = color;
     });
   });
+  renderToothFindingsText();
   renderPositions();
   renderBridges();
+}
+
+ function renderToothFindingsText() {
+  all(".tooth-findings-text").forEach(container => container.replaceChildren());
+  findings.forEach(record => {
+    if (record.treatment) return;
+    const surfaces = record.whole ? "" : [...record.surfaces]
+      .sort((a, b) => "MOIDBFLC".indexOf(a) - "MOIDBFLC".indexOf(b)).join("");
+    const name = record.finding.charAt(0).toUpperCase() + record.finding.slice(1);
+    const text = [surfaces, name].filter(Boolean).join(" ");
+    (record.bridgeTeeth || [record.tooth]).forEach(number => {
+      const container = query(`.tooth-findings-text[data-tooth="${number}"]`);
+      if (!container) return;
+      const line = document.createElement("div");
+      line.className = "tooth-finding-text-line";
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "tooth-finding-action";
+      remove.textContent = text;
+      remove.setAttribute("aria-label", `Delete ${text} from tooth ${getToothLabel(number)}`);
+      remove.addEventListener("click", event => {
+        event.stopPropagation();
+        if (!window.confirm(`Delete "${text}" from tooth ${getToothLabel(number)}?`)) return;
+        findings = findings.filter(item => item !== record);
+        delete chartEdits[record.chartTagId];
+        delete chartEdits[`tooth-${record.tooth}|${record.toothLabel || getToothLabel(record.tooth)}`];
+        if (record.finding === "missing") delete chartEdits["missing-teeth"];
+        refreshChart();
+      });
+      line.append(remove);
+      container.appendChild(line);
+    });
+  });
 }
 
 function renderPositions() {
