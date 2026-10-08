@@ -37,6 +37,7 @@
 .btn-abfraction { background: #ff8a65; color: #222; }
 .btn-erosion { background: #fff176; color: #222; }
 .btn-crack { background: #fff3e0; color: #d84315; border: 2px solid #d84315; }
+.btn-chipped { background: #ffb74d; color: #222; }
 .btn-broken { background: #ff7043; color: white; }
 .btn-zirconia { background: #ab47bc; color: white; }
 .btn-pfm { background: #5c6bc0; color: white; }
@@ -58,6 +59,7 @@
 .surface.abfraction { fill: #ff8a65; }
 .surface.erosion { fill: #fff176; }
 .surface.crack-line { fill: #fff3e0; stroke: #d84315; stroke-width: 5; }
+.surface.chipped { fill: #ffb74d; stroke: #ef6c00; stroke-width: 2; }
 .surface.broken { fill: #ff7043; stroke: #bf360c; stroke-width: 4; }
 
 .tooth-diagram.zirconia-crown,
@@ -349,3 +351,26 @@ button:focus-visible, .tooth-number:focus-visible { outline: 2px solid #2563eb; 
 
 .tooth-diagram.missing.has-implant-symbol .implant-symbol,
 .tooth[hidden] .tooth-diagram.has-implant-symbol .implant-symbol { display: block; visibility: visible; }
+
+.tooth-finding-tags { width: 51px; margin: 3px auto 0; display: flex; flex-direction: column; gap: 3px; }
+.tooth-finding-tags:empty { display: none; }
+.tooth-finding-tag { display: block; width: 100%; box-sizing: border-box; padding: 3px 2px; border: 1px solid #c4d1df; border-radius: 4px; background: #edf3f9; color: #263b50; font: 10px/1.25 Arial, sans-serif; text-align: center; overflow-wrap: anywhere; }
+
+/* Give adjacent teeth and their finding tags more horizontal room. */
+.arch { gap: 12px; }
+.tooth { width: 100px; min-width: 100px; }
+.tooth-diagram { width: 100px; }
+.tooth-finding-tags { width: 75px; }
+.tooth-finding-tag { white-space: nowrap; overflow-wrap: normal; }
+
+.tooth-findings-text { width: 75px; margin: 3px auto 0; color: #263b50; font: 10px/1.35 Arial, sans-serif; text-align: center; }
+.tooth-findings-text:empty { display: none; }
+.tooth-finding-text-line { white-space: nowrap; margin-top: 2px; }
+
+.delete-tooth-finding { display: inline; border: 0; border-radius: 0; background: transparent; box-shadow: none; margin: 0 0 0 3px; padding: 0; color: #65758a; font: bold 10px/1.35 Arial, sans-serif; cursor: pointer; }
+.delete-tooth-finding:hover { background: transparent; color: #c62828; box-shadow: none; }
+.delete-tooth-finding:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+.tooth-finding-action { border: 0; border-radius: 0; background: transparent; box-shadow: none; margin: 0; padding: 0; color: inherit; font: inherit; white-space: nowrap; cursor: pointer; }
+.tooth-finding-action:hover { background: transparent; box-shadow: none; color: #c62828; text-decoration: underline; }
+.tooth-finding-action:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
