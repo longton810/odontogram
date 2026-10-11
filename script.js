@@ -104,7 +104,7 @@ const primaryToothMap = {
   4: "A", 5: "B", 6: "C", 7: "D", 8: "E", 9: "F", 10: "G", 11: "H", 12: "I", 13: "J",
   20: "K", 21: "L", 22: "M", 23: "N", 24: "O", 25: "P", 26: "Q", 27: "R", 28: "S", 29: "T"
 };
-const positionFindings = [ "mobility", "tilted", "rotated", "super-eruption", "erupting" ];
+const positionFindings = [ "mobility", "tilted", "rotated", "super-eruption", "erupting", "impacted", "unerupted" ];
 const mixedPermanentTeeth = [ 3, 14, 19, 30, 7, 8, 9, 10, 23, 24, 25, 26 ];
 createArch("maxillary", maxillaryTeeth);
 createArch("mandibular", mandibularTeeth);
@@ -331,6 +331,7 @@ all(".finding").forEach(function(button) {
     if (finding === "missing") delete chartEdits["missing-teeth"];
     const batchId = nextBatchId++;
     if (finding === "Bridge") {
+      delete chartEdits["bridge-findings"];
       const selectedTeeth = selections .map((selection) => selection.tooth) .sort((a, b) => a - b);
       if (selectedTeeth.length < 2) {
         alert("Please select at least two teeth for a bridge.");
@@ -528,32 +529,51 @@ function renderFindings() {
  function renderToothFindingsText() {
   all(".tooth-findings-text").forEach(container => container.replaceChildren());
   findings.forEach(record => {
-    if (record.treatment) return;
+    if (!record.treatment && record.finding === "missing") return;
     const surfaces = record.whole ? "" : [...record.surfaces]
       .sort((a, b) => "MOIDBFLC".indexOf(a) - "MOIDBFLC".indexOf(b)).join("");
     const name = record.finding.charAt(0).toUpperCase() + record.finding.slice(1);
-    const text = [surfaces, name].filter(Boolean).join(" ");
-    (record.bridgeTeeth || [record.tooth]).forEach(number => {
+    const description = [surfaces, name].filter(Boolean).join(" ");
+    const text = record.treatment ? "[" + description + "]" : description;
+    (record.treatment ? [record.tooth] : record.bridgeTeeth || [record.tooth]).forEach(number => {
       const container = query(`.tooth-findings-text[data-tooth="${number}"]`);
       if (!container) return;
       const line = document.createElement("div");
       line.className = "tooth-finding-text-line";
+      if (record.treatment) line.classList.add("tooth-treatment-line");
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "tooth-finding-action";
-      remove.textContent = text;
+      remove.textContent = record.finding === "NSF" ? "✓" : record.finding === "super-eruption" ? "↓↓↓" : text;
+      if (record.finding === "NSF") {
+        remove.classList.add("nsf-check");
+        remove.title = "No significant finding";
+      }
+      if (record.finding === "super-eruption") {
+        remove.classList.add("super-eruption-arrow");
+        line.classList.add("super-eruption-line");
+        remove.title = "Super-eruption";
+      }
       remove.setAttribute("aria-label", `Delete ${text} from tooth ${getToothLabel(number)}`);
       remove.addEventListener("click", event => {
         event.stopPropagation();
         if (!window.confirm(`Delete "${text}" from tooth ${getToothLabel(number)}?`)) return;
         findings = findings.filter(item => item !== record);
+        if (!record.treatment && ["Bridge", "bridge"].includes(record.finding)) delete chartEdits["bridge-findings"];
+        if (record.treatment && ["Bridge", "bridge"].includes(record.finding)) {
+          findings.filter(item => item.treatment && item.batchId === record.batchId &&
+            ["Bridge", "bridge"].includes(item.finding)).forEach(item => {
+            item.bridgeTeeth = (item.bridgeTeeth || [item.tooth]).filter(number => number !== record.tooth);
+          });
+        }
         delete chartEdits[record.chartTagId];
         delete chartEdits[`tooth-${record.tooth}|${record.toothLabel || getToothLabel(record.tooth)}`];
         if (record.finding === "missing") delete chartEdits["missing-teeth"];
         refreshChart();
       });
       line.append(remove);
-      container.appendChild(line);
+      if (record.finding === "super-eruption") container.prepend(line);
+      else container.appendChild(line);
     });
   });
 }
@@ -893,7 +913,7 @@ function createChartLine(editKey, defaultText, removeRecords) {
   const button = document.createElement("button");
   button.className = "delete-chart-line";
   button.textContent = "×";
-  button.title = "Delete this chart line";
+  button.title = "Delete this Note line";
   button.addEventListener("click", () => {
     removeRecords();
     delete chartEdits[editKey];
@@ -915,22 +935,35 @@ function renderBridgeChart(output) {
     group.records.push(record);
     (record.bridgeTeeth || [record.tooth]).forEach( number => { group.teeth.add(number); });
   });
-  groups.forEach((group, key) => {
+  const descriptions = [];
+  const bridgeRecords = [];
+  groups.forEach(group => {
     const teeth = [...group.teeth].sort((a, b) => a - b);
     if (teeth.length < 2) return;
-    const start = teeth[0];
-    const end = teeth[teeth.length - 1];
-    const text = "#" + start + "-" + end + " bridge";
-    output.appendChild( createChartLine( "bridge-" + key, text, () => { findings = findings.filter((record) => !group.records.includes(record)); }
-    ) );
+    const labels = teeth.map(number => {
+      const record = group.records.find(item => item.tooth === number);
+      const bridge = group.records.find(item => item.bridgeStart === number || item.bridgeEnd === number);
+      return record?.toothLabel || (bridge?.bridgeStart === number ? bridge.bridgeStartLabel : bridge?.bridgeEndLabel) || getToothLabel(number);
+    });
+    const text = "Bridge (#" + labels.map(label => String(label).replace(/^#+/, "")).join("-") + ")";
+    descriptions.push(text);
+    bridgeRecords.push(...group.records);
   });
+  if (descriptions.length) {
+    output.appendChild(createChartLine("bridge-findings", descriptions.join(", "), () => {
+      findings = findings.filter(record => !bridgeRecords.includes(record));
+    }));
+  }
 }
 
 function renderChart() {
   const output = byId("output");
   output.innerHTML = "";
+  renderMissingChart(output);
+  renderBridgeChart(output);
   const groups = new Map();
   findings.forEach(record => {
+    if (!record.treatment && ["missing", "Bridge", "bridge"].includes(record.finding)) return;
     const label = record.toothLabel || getToothLabel(record.tooth);
     const key = record.tooth + "|" + label;
     if (!groups.has(key)) groups.set(key, { tooth: record.tooth, label, records: [] });
@@ -950,7 +983,7 @@ function renderChart() {
 }
 
 function renderMissingChart(output) {
-  const missingRecords = findings.filter((record) => record.finding === "missing");
+  const missingRecords = findings.filter((record) => !record.treatment && record.finding === "missing");
   if (missingRecords.length === 0) return;
   const labels = [...new Set( missingRecords.slice() .sort((a, b) => a.tooth - b.tooth) .map((record) => record.toothLabel || getToothLabel(record.tooth)) )];
   const entry = document.createElement("div");
@@ -959,7 +992,7 @@ function renderMissingChart(output) {
   text.className = "chart-text";
   text.contentEditable = "true";
   text.spellcheck = true;
-  text.textContent = chartEdits["missing-teeth"] ?? "Missing teeth: " + labels.join(", ");
+  text.textContent = chartEdits["missing-teeth"] ?? "Missing #" + labels.map(label => String(label).replace(/^#+/, "")).join(", ");
   text.addEventListener("input", () => { chartEdits["missing-teeth"] = text.textContent; });
   text.addEventListener("blur", () => { chartEdits["missing-teeth"] = text.textContent; });
   const deleteButton = document.createElement("button");
@@ -980,13 +1013,18 @@ byId("undo").addEventListener( "click", () => {
   const lastBatchId = findings[findings.length - 1].batchId;
   findings = findings.filter((record) => record.batchId !== lastBatchId);
   delete chartEdits["missing-teeth"];
+  delete chartEdits["bridge-findings"];
   renderFindings();
   renderChart();
 });
 byId("copyChart").addEventListener("click", async () => {
+  const note = byId("output");
+  note.classList.remove("note-copy-blink");
+  void note.offsetWidth;
+  note.classList.add("note-copy-blink");
   const entries = [...all("#output .chart-text")];
   if (!entries.length) {
-    alert("The chart is empty.");
+    alert("The Note is empty.");
     return;
   }
   const plain = entries.map(chartLineText).join("\n");
@@ -1031,12 +1069,12 @@ byId("copyChart").addEventListener("click", async () => {
     message.textContent = rich ? "Chart copied with formatting!" : "Chart copied as plain text.";
     setTimeout(() => { message.textContent = ""; }, 2000);
   } catch (error) {
-    message.textContent = "Copy unavailable. Select the chart text and copy it manually.";
+    message.textContent = "Copy unavailable. Select the Note text and copy it manually.";
   }
 });
 
 const findingShortcuts = {
-  d: "decay", c: "composite", a: "amalgam",
+  n: "NSF", d: "decay", c: "composite", a: "amalgam",
   r: "RCT", z: "Zirconia crown", b: "Bridge",
   w: "wear", m: "missingMain", t: "root tip",
   p: "PFM crown", i: "incipient caries"
@@ -1146,7 +1184,7 @@ byId("confirmClearAll").addEventListener( "click", () => {
 all(".finding-section, .treatment-section")
 .forEach(section => {
   if (section.querySelector(".category-pair")) return;
-  const rows = [...section.children] .filter(row => row.classList.contains("finding-row"));
+  const rows = [...section.children] .filter(row => row.classList.contains("finding-row") && !row.classList.contains("nsf-row"));
   for (let i = 0; i < rows.length; i += 2) {
     const pair = document.createElement("div");
     pair.className = "category-pair";
@@ -1415,7 +1453,7 @@ if (odontogram && treatmentPanel) {
 (() => {
   const treatment = document.querySelector(".treatment-section")?.closest(".clinical-panel");
   const output = document.getElementById("output");
-  const heading = [...document.querySelectorAll("h2")].find(item => item.textContent.trim() === "Chart");
+  const heading = [...document.querySelectorAll("h2")].find(item => item.textContent.trim() === "Note");
   const grid = document.querySelector(".odontogram-grid");
   if (!treatment || !output || !grid) return;
   const layout = document.createElement("div");
@@ -1424,7 +1462,7 @@ if (odontogram && treatmentPanel) {
   chart.className = "clinical-panel chart-side-panel";
   if (heading) chart.append(heading);
   chart.append(output);
-  [".chart-controls", "#copyMessage", "#autosaveMessage", ".clear-all-area"]
+  [".chart-controls", "#copyMessage", "#autosaveMessage"]
     .forEach(selector => {
       const element = document.querySelector(selector);
       if (element) chart.append(element);
@@ -1434,3 +1472,10 @@ if (odontogram && treatmentPanel) {
   layout.append(chart, treatment);
   grid.after(layout);
 })();
+// Place the page-wide reset control after all content panels.
+const clearAllArea = query(".clear-all-area");
+if (clearAllArea) document.body.append(clearAllArea);
+
+byId("output").addEventListener("animationend", event => {
+  if (event.animationName === "note-copy-blink") byId("output").classList.remove("note-copy-blink");
+});
