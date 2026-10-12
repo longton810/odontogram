@@ -307,6 +307,7 @@ function updateFindingButtons() {
   setDisabled(".whole-treatment", !hasWholeSelections());
   setDisabled(".surface-finding", !surface);
   setDisabled(".whole-finding", !whole);
+  setDisabled('.finding[data-name="wear"]', !whole && !surface);
   const unmissing = whole && selections.every(item => isToothMissing(item.tooth));
   const missingButton = byId("missingMain");
   missingButton.textContent = unmissing ? "(M) Unmissing" : "(M) Missing";
@@ -790,12 +791,13 @@ function createTagChartLine(group) {
   line.append(label, document.createTextNode(":"));
   const editKey = "tooth-" + group.tooth + "-" + group.label;
   const ordered = [...group.records].sort((a, b) => Number(!!a.treatment) - Number(!!b.treatment));
+  const treatmentRecords = ordered.filter(record => record.treatment);
   const parts = [];
   const cleanText = value => value.replace(/\u200b/g, "");
   const syncText = () => {
     line.dataset.copyText = group.label + ":" + parts.map(part =>
       part.gap ? cleanText(part.element.textContent) :
-      (part.record.treatment ? "[" + part.element.textContent + "]" : part.element.textContent)
+      (part.record.treatment ? (part.record === treatmentRecords[0] ? "[" : "") + part.element.textContent + (part.record === treatmentRecords.at(-1) ? "]" : "") : part.element.textContent)
     ).join("");
   };
   const createGap = (key, fallback) => {
@@ -830,7 +832,7 @@ function createTagChartLine(group) {
       record.chartTagId = id;
     }
     createGap(editKey + "-gap-before-" + record.chartTagId,
-      index === 0 || record.treatment ? " " : "; ");
+      index === 0 || record === treatmentRecords[0] ? " " : "; ");
     const tag = document.createElement("span");
     tag.contentEditable = "false";
     tag.className = "chart-tag" + (record.treatment ? " chart-treatment-tag" : "");
@@ -854,7 +856,9 @@ function createTagChartLine(group) {
     if (record.treatment) {
       const treatment = document.createElement("strong");
       treatment.style.fontWeight = "700";
-      treatment.append(document.createTextNode("["), text, document.createTextNode("]"));
+      if (record === treatmentRecords[0]) treatment.append(document.createTextNode("["));
+      treatment.append(text);
+      if (record === treatmentRecords.at(-1)) treatment.append(document.createTextNode("]"));
       tag.append(treatment);
     } else tag.append(text);
     const remove = document.createElement("button");
@@ -1085,10 +1089,11 @@ document.addEventListener("keydown", event => {
   const active = document.activeElement;
   if (active && active.closest(editingSelector)) return;
   if ( event.target instanceof Element && event.target.closest(editingSelector) ) return;
-  const name = findingShortcuts[event.key.toLowerCase()];
+  const treatment = {f: "Composite", e: "Extraction"}[event.key.toLowerCase()];
+  const name = treatment || findingShortcuts[event.key.toLowerCase()];
   if (!name) return;
-  const button = name === "missingMain" ? byId("missingMain") : Array.from(all(".finding")) .find((button) => button.dataset.name === name);
-  if ( !button || button.disabled || selections.length === 0 ) return;
+  const button = treatment ? query(`.treatment[data-treatment="${treatment}"]`) : name === "missingMain" ? byId("missingMain") : Array.from(all(".finding")) .find((button) => button.dataset.name === name);
+  if ( !button || button.disabled || button.closest("[hidden]") || selections.length === 0 ) return;
   event.preventDefault();
   button.click();
 });
@@ -1184,6 +1189,18 @@ byId("confirmClearAll").addEventListener( "click", () => {
 all(".finding-section, .treatment-section")
 .forEach(section => {
   if (section.querySelector(".category-pair")) return;
+  if (section.classList.contains("finding-section")) {
+    const findingRows = [...section.children].filter(row => row.classList.contains("finding-row"));
+    const rowsByName = Object.fromEntries(findingRows.map(row => [row.classList.contains("nsf-row") ? "NSF" : row.querySelector(".finding-label")?.textContent.trim().replace(/:$/, ""), row]));
+    [["NSF", "Caries", "Endo"], ["Material"], ["Non-carious", "Position"]].forEach(names => {
+      const line = document.createElement("div");
+      line.className = "category-pair recall-findings-line";
+      names.forEach(name => { if (rowsByName[name]) line.append(rowsByName[name]); });
+      section.append(line);
+    });
+    return;
+  }
+
   const rows = [...section.children] .filter(row => row.classList.contains("finding-row") && !row.classList.contains("nsf-row"));
   for (let i = 0; i < rows.length; i += 2) {
     const pair = document.createElement("div");

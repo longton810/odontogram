@@ -409,3 +409,23 @@ body > .clear-all-area { width: 100%; box-sizing: border-box; margin-top: 40px; 
 @media (prefers-reduced-motion: reduce) { #output.note-copy-blink { animation: note-copy-blink .2s linear; } }
 
 .finding-section > .finding-row.nsf-row::after { content: none; }
+
+/* Shared chart layout and controls from Recall. */
+.finding-section > .recall-findings-line { display: flex; align-items: center; flex-wrap: nowrap; gap: 4px; overflow-x: auto; }
+.recall-findings-line > .finding-row { width: auto; flex: 0 0 auto; flex-wrap: nowrap; }
+.finding-section > .recall-findings-line > .finding-row:last-child::after,
+.finding-section > .recall-findings-line > .nsf-row::after { content: none; }
+.finding-section > .recall-findings-line > .nsf-row::after { content: "|"; position: static; transform: none; margin: 0 3px; color: var(--muted, #62748b); font-weight: bold; }
+.odontogram-grid .arch { gap: 3px; }
+.odontogram-grid .tooth { width: 75px; min-width: 75px; }
+.odontogram-grid .tooth.midline { margin-right: 6px; }
+.odontogram-grid .dentition-canvas { width: max-content; max-width: 100%; }
+.odontogram-grid .tooth-diagram { width: 68px; margin-left: auto; margin-right: auto; }
+.odontogram-grid .tooth-number { display: flex; width: max-content; margin-left: auto; margin-right: auto; justify-content: center; }
+body .chart-treatment-layout .treatment-section .finding-row.treatment-single-line { flex-wrap: nowrap; overflow-x: auto; }
+.treatment-single-line .treatment { flex-shrink: 0; white-space: nowrap; }
+body .chart-treatment-layout { grid-template-columns: minmax(0, 1fr) 460px; }
+body .chart-treatment-layout .treatment-section .finding-row { flex-wrap: nowrap; overflow-x: auto; }
+body .chart-treatment-layout .treatment-section .treatment { flex-shrink: 0; white-space: nowrap; }
+body .chart-treatment-layout.cleaning-only-layout { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 900px) { body .chart-treatment-layout { grid-template-columns: 1fr; } }

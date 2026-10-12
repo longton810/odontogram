@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Odontogram</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Dental Odontogram</title>
+  <link rel="stylesheet" href="style.css?v=5e0f692a69">
 </head>
 <body>
   <div class="odontogram-grid">
@@ -84,8 +84,8 @@
           <button type="button" class="treatment watch-treatment btn-watch" data-treatment="Watch">Watch</button>
           <button type="button" class="treatment surface-treatment btn-sdf" data-treatment="SDF">SDF</button>
         </div>
-        <div class="finding-row"><span class="finding-label">Filling:</span>
-          <button type="button" class="treatment surface-treatment btn-composite" data-treatment="Composite">Composite</button>
+        <div class="finding-row treatment-single-line"><span class="finding-label">Filling:</span>
+          <button type="button" class="treatment surface-treatment btn-composite" data-treatment="Composite" aria-keyshortcuts="f">(F) Composite</button>
           <button type="button" class="treatment surface-treatment btn-amalgam" data-treatment="Amalgam">Amalgam</button>
           <button type="button" class="treatment surface-treatment btn-rmgi" data-treatment="RMGI">RMGI</button>
           <button type="button" class="treatment surface-treatment btn-irm" data-treatment="IRM">IRM</button>
@@ -103,8 +103,8 @@
           <button type="button" class="treatment whole-treatment btn-metal" data-treatment="Metal">Metal</button>
           <button type="button" class="treatment whole-treatment btn-bridge" data-treatment="Bridge">Bridge</button>
         </div>
-        <div class="finding-row"><span class="finding-label">OS:</span>
-          <button type="button" class="treatment whole-treatment btn-extraction" data-treatment="Extraction">Extraction</button>
+        <div class="finding-row treatment-single-line"><span class="finding-label">OS:</span>
+          <button type="button" class="treatment whole-treatment btn-extraction" data-treatment="Extraction" aria-keyshortcuts="e">(E) Extraction</button>
           <button type="button" class="treatment whole-treatment btn-lengthening" data-treatment="Crown lengthening">Crown lengthening</button>
           <button type="button" class="treatment whole-treatment btn-implant" data-treatment="Implant">Implant</button>
         </div>
@@ -129,6 +129,6 @@
       <button id="confirmClearAll" type="button">Yes, delete all</button>
     </div>
   </dialog>
-  <script src="script.js"></script>
+  <script src="script.js?v=ef00c24779"></script>
 </body>
 </html>
