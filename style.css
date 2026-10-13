@@ -147,9 +147,9 @@ hr { height: 1px; border: 0; margin: 25px 0 10px; background: linear-gradient(90
 .cervical-surface { fill: rgba(255,255,255,.95); stroke: #496480; stroke-width: 1.7; }
 .surface.selected { fill: #ffe38a !important; stroke: #d99b16; }
 .tooth-diagram text { fill: #30465e; font-weight: 600; }
-.tooth-number { border: 1px solid transparent; border-radius: 9px; font-size: 13px; color: var(--ink); transition: background .15s,box-shadow .15s; }
-.tooth-number:hover { background: rgba(255,255,255,.85); border-color: rgba(118,145,175,.25); box-shadow: 0 3px 8px rgba(36,62,96,.08); }
-.tooth-number.selected { background: #ffe38a; border-color: #e3bd52; color: #604816; box-shadow: 0 3px 9px rgba(215,168,41,.18); }
+.tooth-number { border: 1px solid transparent; border-radius: 9px; font-size: 13px; color: var(--ink); transition: none; }
+.tooth-number:hover { background: #fff; border-color: #c4d1df; box-shadow: none; }
+.tooth-number.selected { background: #ffe38a; border-color: #e3bd52; color: #604816; box-shadow: none; }
 .position-display { color: var(--muted); font-weight: normal; line-height: 1.35; }
 
 .dentition-button, #changeAge, #missingMain {
@@ -374,3 +374,173 @@ button:focus-visible, .tooth-number:focus-visible { outline: 2px solid #2563eb; 
 .tooth-finding-action { border: 0; border-radius: 0; background: transparent; box-shadow: none; margin: 0; padding: 0; color: inherit; font: inherit; white-space: nowrap; cursor: pointer; }
 .tooth-finding-action:hover { background: transparent; box-shadow: none; color: #c62828; text-decoration: underline; }
 .tooth-finding-action:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+/* The normal-finding control occupies its own row above the categories. */
+.nsf-row { display: flex; width: 100%; }
+.btn-nsf { background: #fff; color: #000; border: 1px solid #000; }
+
+.tooth-finding-action.nsf-check { color: #16a34a; font-size: 18px; font-weight: 700; }
+
+.tooth-finding-action.super-eruption-arrow { color: #dc2626; font-size: 14px; line-height: 1; letter-spacing: -1px; font-weight: 700; }
+.tooth-finding-text-line.super-eruption-line { margin-top: -4px; line-height: 1; }
+
+.tooth-finding-text-line { color: #dc2626; }
+.tooth-finding-text-line.tooth-treatment-line { color: #2563eb; }
+.tooth-treatment-line .tooth-finding-action:hover { color: #2563eb; }
+.tooth-finding-action.nsf-check:hover { color: #16a34a; }
+
+body > .clear-all-area { width: 100%; box-sizing: border-box; margin-top: 40px; display: flex; justify-content: flex-end; }
+
+/* NPS-style Note copy control and feedback. */
+.chart-controls { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 18px; }
+#copyChart { padding: 12px 34px; font-size: 15px; font-weight: 600; }
+#copyChart:active { box-shadow: 0 2px 5px rgba(37,99,235,.2); }
+#copyChart { border-radius: 12px; color: white; background: linear-gradient(145deg,rgba(72,137,250,.92),rgba(29,78,216,.78)); border: 1px solid rgba(168,204,255,.7); box-shadow: inset 0 1px 0 rgba(255,255,255,.45),0 5px 14px rgba(37,99,235,.22); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+#copyChart:hover { background: linear-gradient(145deg,rgba(90,151,255,.96),rgba(37,99,235,.85)); }
+#copyChart:active { background: linear-gradient(145deg,rgba(37,99,235,.92),rgba(30,64,175,.85)); }
+#copyChart { position: relative; overflow: hidden; transition: transform .2s ease, box-shadow .2s ease, filter .2s ease; }
+#copyChart::before { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg,transparent 25%,rgba(255,255,255,.35) 50%,transparent 75%); transform: translateX(-150%); transition: transform .55s ease; pointer-events: none; }
+#copyChart:hover { transform: translateY(-3px); filter: brightness(1.08); box-shadow: inset 0 1px 0 rgba(255,255,255,.6),0 9px 22px rgba(37,99,235,.35); }
+#copyChart:hover::before { transform: translateX(150%); }
+#copyChart:active { transform: translateY(0); filter: brightness(1); }
+#copyChart:focus-visible { outline: 3px solid #93c5fd; outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { #copyChart, #copyChart::before { transition: none; } #copyChart:hover { transform: none; } #copyChart::before { display: none; } }
+@keyframes note-copy-blink { 0%,100% { background-color: transparent; box-shadow: none; } 35% { background-color: rgba(254,240,138,.45); box-shadow: 0 0 0 4px rgba(253,224,71,.18); } }
+#output.note-copy-blink { animation: note-copy-blink .6s ease-out; border-radius: 8px; }
+@media (prefers-reduced-motion: reduce) { #output.note-copy-blink { animation: note-copy-blink .2s linear; } }
+
+.finding-section > .finding-row.nsf-row::after { content: none; }
+
+/* Shared chart layout and controls from Recall. */
+.finding-section > .recall-findings-line { display: flex; align-items: center; flex-wrap: nowrap; gap: 4px; overflow-x: auto; }
+.recall-findings-line > .finding-row { width: auto; flex: 0 0 auto; flex-wrap: nowrap; }
+.finding-section > .recall-findings-line > .finding-row:last-child::after,
+.finding-section > .recall-findings-line > .nsf-row::after { content: none; }
+.finding-section > .recall-findings-line > .nsf-row::after { content: "|"; position: static; transform: none; margin: 0 3px; color: var(--muted, #62748b); font-weight: bold; }
+.odontogram-grid .arch { gap: 3px; }
+.odontogram-grid .tooth { width: 75px; min-width: 75px; }
+.odontogram-grid .tooth.midline { margin-right: 6px; }
+.odontogram-grid .dentition-canvas { width: max-content; max-width: 100%; }
+.odontogram-grid .tooth-diagram { width: 68px; margin-left: auto; margin-right: auto; }
+.odontogram-grid .tooth-number { position: relative; z-index: 2; display: flex; width: 51px; min-width: 51px; margin-left: auto; margin-right: auto; justify-content: center; }
+body .chart-treatment-layout .treatment-section .finding-row.treatment-single-line { flex-wrap: nowrap; overflow-x: auto; }
+.treatment-single-line .treatment { flex-shrink: 0; white-space: nowrap; }
+body .chart-treatment-layout { grid-template-columns: minmax(0, 1fr) 460px; }
+body .chart-treatment-layout .treatment-section .finding-row { flex-wrap: nowrap; overflow-x: auto; }
+body .chart-treatment-layout .treatment-section .treatment { flex-shrink: 0; white-space: nowrap; }
+body .chart-treatment-layout.cleaning-only-layout { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 900px) { body .chart-treatment-layout { grid-template-columns: 1fr; } }
+
+.btn-overhang { background:#42a5f5; color:white; }
+.btn-open-margin { background:#42a5f5; color:white; }
+.btn-rest-seat { background:#fff176; color:#222; }
+.surface.overhang { fill:#ffb74d; stroke:#ef6c00; stroke-width:2; }
+.surface.open-margin { fill:#ff8a65; stroke:#d84315; stroke-width:2; }
+.surface.rest-seat { fill:#fff176; stroke:#b59b00; stroke-width:2; }
+
+.chart-tag-text[contenteditable="true"] { display:inline-block; cursor:text; min-width:1px; min-height:1em; white-space:pre-wrap; user-select:text; -webkit-user-select:text; pointer-events:auto; }
+.chart-tag-text[contenteditable="true"]:focus { outline:1px solid rgba(59,130,246,.5); border-radius:3px; }
+
+/* Note tags and panel layout. */
+.chart-entry.chart-tag-entry { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+  .chart-tag-list { display: block; }
+  .chart-tag-list > .chart-tag { margin: 2px 0; vertical-align: middle; }
+  .chart-inline-text { display: inline-block; min-width: 7px; min-height: 1em;
+    vertical-align: middle; white-space: pre-wrap; outline: none; }
+  .chart-inline-text:focus { box-shadow: 0 1px 0 #8197b4; }
+  .chart-treatment-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start; gap: 18px; width: 100%; max-width: 1450px;
+    margin-top: 18px; padding: 0; border: 0; }
+  .chart-treatment-layout > .clinical-panel {
+    min-width: 0; margin: 0; padding: 14px; box-sizing: border-box;
+    border: 1px solid var(--glass-border, rgba(118,145,175,.3));
+    border-radius: 18px; background: var(--glass, rgba(245,250,255,.8));
+  }
+  .chart-treatment-layout .chart-side-panel #output {
+    border: 0; background: transparent; box-shadow: none; padding: 0;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+  .chart-treatment-layout .treatment-section {
+    display: flex; flex-direction: column; gap: 6px; padding: 0;
+    border: 0; background: transparent; box-shadow: none;
+  }
+  .chart-treatment-layout .treatment-section .category-pair { display: contents; }
+  .chart-treatment-layout .treatment-section .finding-row {
+    display: flex; flex: 0 0 auto; width: 100%; box-sizing: border-box;
+    flex-wrap: wrap; align-items: center; gap: 4px; margin: 0;
+  }
+  .chart-treatment-layout .treatment-section .finding-row::after { content: none; }
+  .chart-treatment-layout h2 { margin: 0 0 8px; }
+  .chart-treatment-layout .chart-side-panel #output { width: 100%; max-width: 100%; box-sizing: border-box; }
+  .chart-treatment-layout > .sticky-treatment-panel {
+    position: sticky; top: 16px; align-self: start;
+    max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px);
+    overflow-y: auto; box-shadow: var(--panel-shadow, 0 8px 24px rgba(30,60,100,.08));
+    backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+  }
+  @media (max-width: 850px) {
+    .chart-treatment-layout { grid-template-columns: 1fr; }
+    .chart-treatment-layout > .sticky-treatment-panel { position: static; max-height: none; }
+  }
+  .chart-tooth-label { font-weight: 700; margin-right: 3px; }
+  .chart-tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 7px;
+    border: 1px solid rgba(118,145,175,.3); border-radius: 9px;
+    background: rgba(245,250,255,.85); }
+  .chart-treatment-tag { background: rgba(255,249,214,.85); }
+  .chart-tag-text { outline: none; }
+  .chart-finding-select, .chart-tooth-label { font: inherit; color: inherit; cursor: pointer; }
+  .chart-finding-select { padding: 0; border: 0; background: transparent; }
+  .chart-tooth-label { font-weight: 700; }
+  .chart-finding-select.selected { color: #1d5bbb; text-decoration: underline; }
+  .chart-tooth-label.selected { border-color: #548de0; background: #e3efff; }
+  .chart-finding-select:focus-visible, .chart-tooth-label:focus-visible { outline: 2px solid #548de0; }
+  .delete-chart-tag { flex: none; border: 0; background: transparent; padding: 0 2px;
+    color: #65758a; font: bold 13px/1 Arial,sans-serif; cursor: pointer; }
+  .delete-chart-tag:hover { color: #c62828; }
+  .chart-saved-note { font: inherit; color: inherit; }
+
+/* Last-action notice and Undo. */
+.dentition-canvas.has-action-notice { padding-top: 44px; }
+    .odontogram-action-notice {
+      position: absolute;
+      top: 0;
+      left: var(--tooth-midline, 50%);
+      transform: translateX(-50%);
+      z-index: 12;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: max-content;
+      max-width: calc(100% - 24px);
+      box-sizing: border-box;
+      padding: 3px 8px;
+      border: 1px solid rgba(118, 145, 175, .3);
+      border-radius: 12px;
+      background: rgba(255, 249, 214, .92);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 3px 12px rgba(30, 60, 100, .1);
+      color: #203653;
+      font: 12px/1.2 Arial, sans-serif;
+    }
+    .odontogram-action-notice[hidden] { display: none; }
+    .odontogram-action-text {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .odontogram-action-undo {
+      flex: none;
+      padding: 3px 8px;
+      border: 1px solid rgba(118, 145, 175, .4);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .8);
+      color: #203653;
+      font: bold 11px/1.2 Arial, sans-serif;
+      cursor: pointer;
+    }
+    .odontogram-action-undo:hover { background: #fff; }
+    .odontogram-action-undo:disabled { opacity: .45; cursor: default; }
+    @media (max-width: 640px) {
+      .dentition-canvas.has-action-notice { padding-top: 76px; }
+      .odontogram-action-notice { top: 0; }
+    }

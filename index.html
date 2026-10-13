@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dental Odontogram</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=1cf456b61a">
 </head>
 <body>
   <div class="odontogram-grid">
@@ -25,6 +25,9 @@
     <section class="clinical-panel odontogram-findings">
       <h2>Findings</h2>
       <div class="finding-section">
+        <div class="finding-row nsf-row">
+          <button class="finding whole-finding btn-nsf" data-name="NSF" aria-keyshortcuts="n" title="Select a tooth and press N">(N) No significant finding</button>
+        </div>
         <div class="finding-row"><span class="finding-label">Caries:</span>
           <button class="finding surface-finding btn-caries" data-name="decay" aria-keyshortcuts="d">(D) Decay</button>
           <button class="finding surface-finding btn-decalcified" data-name="decalcified">Decalcified</button>
@@ -54,12 +57,15 @@
           <button class="finding whole-finding btn-ankylosis" data-name="ankylosis">Ankylosis</button>
         </div>
         <div class="finding-row"><span class="finding-label">Non-carious:</span>
-          <button class="finding surface-finding btn-wear" data-name="wear" aria-keyshortcuts="w">(W) Wear</button>
+          <button class="finding whole-finding btn-wear" data-name="wear">Wear</button>
+          <button class="finding surface-finding btn-chipped" data-name="chipped">Chipped</button>
           <button class="finding surface-finding btn-abfraction" data-name="abfraction">Abfraction</button>
           <button class="finding surface-finding btn-erosion" data-name="erosion">Erosion</button>
           <button class="finding surface-finding btn-crack" data-name="crack line">Crack Line</button>
-          <button class="finding surface-finding btn-chipped" data-name="chipped">Chipped</button>
           <button class="finding surface-finding btn-broken" data-name="broken">Broken</button>
+          <button class="finding surface-finding btn-overhang" data-name="overhang">Overhang</button>
+          <button class="finding surface-finding btn-open-margin" data-name="open margin">Open margin</button>
+          <button class="finding surface-finding btn-rest-seat" data-name="rest seat">Rest seat</button>
         </div>
         <div class="finding-row"><span class="finding-label">Position:</span>
           <button class="finding whole-finding position-button" data-name="mobility">Mobility</button>
@@ -67,6 +73,8 @@
           <button class="finding whole-finding position-button" data-name="rotated">Rotated</button>
           <button class="finding whole-finding position-button" data-name="super-eruption">Super-eruption</button>
           <button class="finding whole-finding position-button" data-name="erupting">Erupting</button>
+          <button class="finding whole-finding position-button" data-name="impacted">Impacted</button>
+          <button class="finding whole-finding position-button" data-name="unerupted">Unerupted</button>
         </div>
       </div>
     </section>
@@ -76,11 +84,11 @@
       <h2>Suggested treatment</h2>
       <div class="treatment-section">
         <div class="finding-row"><span class="finding-label">Conservative:</span>
-          <button type="button" class="treatment watch-treatment btn-watch" data-treatment="Watch">Watch</button>
+          <button type="button" class="treatment watch-treatment btn-watch" data-treatment="Watch" aria-keyshortcuts="w">(W) Watch</button>
           <button type="button" class="treatment surface-treatment btn-sdf" data-treatment="SDF">SDF</button>
         </div>
-        <div class="finding-row"><span class="finding-label">Filling:</span>
-          <button type="button" class="treatment surface-treatment btn-composite" data-treatment="Composite">Composite</button>
+        <div class="finding-row treatment-single-line"><span class="finding-label">Filling:</span>
+          <button type="button" class="treatment surface-treatment btn-composite" data-treatment="Composite" aria-keyshortcuts="f">(F) Composite</button>
           <button type="button" class="treatment surface-treatment btn-amalgam" data-treatment="Amalgam">Amalgam</button>
           <button type="button" class="treatment surface-treatment btn-rmgi" data-treatment="RMGI">RMGI</button>
           <button type="button" class="treatment surface-treatment btn-irm" data-treatment="IRM">IRM</button>
@@ -98,18 +106,18 @@
           <button type="button" class="treatment whole-treatment btn-metal" data-treatment="Metal">Metal</button>
           <button type="button" class="treatment whole-treatment btn-bridge" data-treatment="Bridge">Bridge</button>
         </div>
-        <div class="finding-row"><span class="finding-label">OS:</span>
-          <button type="button" class="treatment whole-treatment btn-extraction" data-treatment="Extraction">Extraction</button>
+        <div class="finding-row treatment-single-line"><span class="finding-label">OS:</span>
+          <button type="button" class="treatment whole-treatment btn-extraction" data-treatment="Extraction" aria-keyshortcuts="e">(E) Extraction</button>
           <button type="button" class="treatment whole-treatment btn-lengthening" data-treatment="Crown lengthening">Crown lengthening</button>
           <button type="button" class="treatment whole-treatment btn-implant" data-treatment="Implant">Implant</button>
         </div>
       </div>
     </section>
   </div>
-  <h2>Chart</h2>
+  <h2>Note</h2>
   <div id="output"></div>
   <div class="chart-controls">
-    <button id="copyChart">Copy Chart</button>
+    <button id="copyChart">Copy Note</button>
     <button id="undo">Undo Last</button>
   </div>
   <div id="copyMessage"></div>
@@ -124,6 +132,6 @@
       <button id="confirmClearAll" type="button">Yes, delete all</button>
     </div>
   </dialog>
-  <script src="script.js"></script>
+  <script src="script.js?v=401c868ae8"></script>
 </body>
 </html>

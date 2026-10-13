@@ -1,71 +1,15 @@
-const chartTagStyle = document.createElement("style");
-chartTagStyle.textContent = `
-  .chart-entry.chart-tag-entry { display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
-  .chart-tag-list { display: block; }
-  .chart-tag-list > .chart-tag { margin: 2px 0; vertical-align: middle; }
-  .chart-inline-text { display: inline-block; min-width: 7px; min-height: 1em;
-    vertical-align: middle; white-space: pre-wrap; outline: none; }
-  .chart-inline-text:focus { box-shadow: 0 1px 0 #8197b4; }
-  .chart-treatment-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start; gap: 18px; width: 100%; max-width: 1450px;
-    margin-top: 18px; padding: 0; border: 0; }
-  .chart-treatment-layout > .clinical-panel {
-    min-width: 0; margin: 0; padding: 14px; box-sizing: border-box;
-    border: 1px solid var(--glass-border, rgba(118,145,175,.3));
-    border-radius: 18px; background: var(--glass, rgba(245,250,255,.8));
-  }
-  .chart-treatment-layout .chart-side-panel #output {
-    border: 0; background: transparent; box-shadow: none; padding: 0;
-    backdrop-filter: none; -webkit-backdrop-filter: none;
-  }
-  .chart-treatment-layout .treatment-section {
-    display: flex; flex-direction: column; gap: 6px; padding: 0;
-    border: 0; background: transparent; box-shadow: none;
-  }
-  .chart-treatment-layout .treatment-section .category-pair { display: contents; }
-  .chart-treatment-layout .treatment-section .finding-row {
-    display: flex; flex: 0 0 auto; width: 100%; box-sizing: border-box;
-    flex-wrap: wrap; align-items: center; gap: 4px; margin: 0;
-  }
-  .chart-treatment-layout .treatment-section .finding-row::after { content: none; }
-  .chart-treatment-layout h2 { margin: 0 0 8px; }
-  .chart-treatment-layout .chart-side-panel #output { width: 100%; max-width: 100%; box-sizing: border-box; }
-  .chart-treatment-layout > .sticky-treatment-panel {
-    position: sticky; top: 16px; align-self: start;
-    max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px);
-    overflow-y: auto; box-shadow: var(--panel-shadow, 0 8px 24px rgba(30,60,100,.08));
-    backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
-  }
-  @media (max-width: 850px) {
-    .chart-treatment-layout { grid-template-columns: 1fr; }
-    .chart-treatment-layout > .sticky-treatment-panel { position: static; max-height: none; }
-  }
-  .chart-tooth-label { font-weight: 700; margin-right: 3px; }
-  .chart-tag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 7px;
-    border: 1px solid rgba(118,145,175,.3); border-radius: 9px;
-    background: rgba(245,250,255,.85); }
-  .chart-treatment-tag { background: rgba(255,249,214,.85); }
-  .chart-tag-text { outline: none; }
-  .chart-finding-select, .chart-tooth-label { font: inherit; color: inherit; cursor: pointer; }
-  .chart-finding-select { padding: 0; border: 0; background: transparent; }
-  .chart-tooth-label { font-weight: 700; }
-  .chart-finding-select.selected { color: #1d5bbb; text-decoration: underline; }
-  .chart-tooth-label.selected { border-color: #548de0; background: #e3efff; }
-  .chart-finding-select:focus-visible, .chart-tooth-label:focus-visible { outline: 2px solid #548de0; }
-  .delete-chart-tag { flex: none; border: 0; background: transparent; padding: 0 2px;
-    color: #65758a; font: bold 13px/1 Arial,sans-serif; cursor: pointer; }
-  .delete-chart-tag:hover { color: #c62828; }
-  .chart-saved-note { font: inherit; color: inherit; }
-`;
-document.head.append(chartTagStyle);
-
 const query = selector => document.querySelector(selector);
 const all = selector => document.querySelectorAll(selector);
 const byId = id => document.getElementById(id);
 
+function formatFindingText(surface, finding) {
+  const name = finding.toLowerCase();
+  return surface ? surface + " " + name : name.charAt(0).toUpperCase() + name.slice(1);
+}
+
 function recordText(record) {
   const surface = record.whole ? "" : formatSurfaceText(record.surfaces);
-  return surface ? surface + " " + record.finding : record.finding;
+  return formatFindingText(surface, record.finding);
 }
 
 function setDentitionButtons(mode) {
@@ -104,7 +48,7 @@ const primaryToothMap = {
   4: "A", 5: "B", 6: "C", 7: "D", 8: "E", 9: "F", 10: "G", 11: "H", 12: "I", 13: "J",
   20: "K", 21: "L", 22: "M", 23: "N", 24: "O", 25: "P", 26: "Q", 27: "R", 28: "S", 29: "T"
 };
-const positionFindings = [ "mobility", "tilted", "rotated", "super-eruption", "erupting" ];
+const positionFindings = [ "mobility", "tilted", "rotated", "super-eruption", "erupting", "impacted", "unerupted" ];
 const mixedPermanentTeeth = [ 3, 14, 19, 30, 7, 8, 9, 10, 23, 24, 25, 26 ];
 createArch("maxillary", maxillaryTeeth);
 createArch("mandibular", mandibularTeeth);
@@ -307,6 +251,7 @@ function updateFindingButtons() {
   setDisabled(".whole-treatment", !hasWholeSelections());
   setDisabled(".surface-finding", !surface);
   setDisabled(".whole-finding", !whole);
+  setDisabled('.finding[data-name="wear"]', !whole && !surface);
   const unmissing = whole && selections.every(item => isToothMissing(item.tooth));
   const missingButton = byId("missingMain");
   missingButton.textContent = unmissing ? "(M) Unmissing" : "(M) Missing";
@@ -331,6 +276,7 @@ all(".finding").forEach(function(button) {
     if (finding === "missing") delete chartEdits["missing-teeth"];
     const batchId = nextBatchId++;
     if (finding === "Bridge") {
+      delete chartEdits["bridge-findings"];
       const selectedTeeth = selections .map((selection) => selection.tooth) .sort((a, b) => a - b);
       if (selectedTeeth.length < 2) {
         alert("Please select at least two teeth for a bridge.");
@@ -432,25 +378,27 @@ function markCrown(toothNumber, color) {
   tooth.querySelector(".crown-outline").style.stroke = color;
 }
 
+const surfaceClasses = {
+  "stain": "stain", "caries": "caries", "cavity": "caries",
+  "decay": "caries", "decalcified": "decalcified", "incipient caries": "incipient-caries",
+  "recurrent caries": "recurrent-caries", "gross caries": "gross-caries", "composite": "composite",
+  "amalgam": "amalgam", "sealant": "sealant", "IRM": "irm",
+  "wear": "wear", "abfraction": "abfraction", "erosion": "erosion",
+  "crack line": "crack-line", "chipped": "chipped", "broken": "broken",
+  "overhang": "overhang", "open margin": "open-margin", "rest seat": "rest-seat"
+};
+const wholeClasses = {
+  "SSC": "ssc", "Zirconia crown": "zirconia-crown", "PFM crown": "pfm-crown",
+  "Metal crown": "metal-crown", "RCT": "rct", "post & core": "post-core",
+  "implant": "implant", "missing": "missing", "root tip": "root-tip",
+  "PARL": "parl", "PARO": "paro", "ankylosis": "ankylosis"
+};
+const crownFindings = [ "SSC", "Zirconia crown", "PFM crown", "Metal crown", "implant" ];
+const crownTreatments = [ "CBU", "SSC", "Zirconia", "PFM", "Metal", "Bridge", "bridge", "Implant", "implant" ];
+const fillingTreatments = [ "Composite", "Amalgam", "RMGI", "IRM" ];
+
 function renderFindings() {
   all(".tooth").forEach(tooth => { tooth.classList.remove("has-watch-marker"); });
-  const surfaceClasses = {
-    "stain": "stain", "caries": "caries", "cavity": "caries",
-    "decay": "caries", "decalcified": "decalcified", "incipient caries": "incipient-caries",
-    "recurrent caries": "recurrent-caries", "gross caries": "gross-caries", "composite": "composite",
-    "amalgam": "amalgam", "sealant": "sealant", "IRM": "irm",
-    "wear": "wear", "abfraction": "abfraction", "erosion": "erosion",
-    "crack line": "crack-line", "chipped": "chipped", "broken": "broken"
-  };
-  const wholeClasses = {
-    "SSC": "ssc", "Zirconia crown": "zirconia-crown", "PFM crown": "pfm-crown",
-    "Metal crown": "metal-crown", "RCT": "rct", "post & core": "post-core",
-    "implant": "implant", "missing": "missing", "root tip": "root-tip",
-    "PARL": "parl", "PARO": "paro", "ankylosis": "ankylosis"
-  };
-  const crownFindings = [ "SSC", "Zirconia crown", "PFM crown", "Metal crown", "implant" ];
-  const crownTreatments = [ "CBU", "SSC", "Zirconia", "PFM", "Metal", "Bridge", "bridge", "Implant", "implant" ];
-  const fillingTreatments = [ "Composite", "Amalgam", "RMGI", "IRM" ];
   all(".cervical-label").forEach( label => { label.textContent = "C"; });
   all(".root-markers").forEach( marker => { marker.innerHTML = ""; });
   all(".surface").forEach( surface => {
@@ -525,35 +473,53 @@ function renderFindings() {
   renderBridges();
 }
 
- function renderToothFindingsText() {
+function renderToothFindingsText() {
   all(".tooth-findings-text").forEach(container => container.replaceChildren());
   findings.forEach(record => {
-    if (record.treatment) return;
-    const surfaces = record.whole ? "" : [...record.surfaces]
-      .sort((a, b) => "MOIDBFLC".indexOf(a) - "MOIDBFLC".indexOf(b)).join("");
-    const name = record.finding.charAt(0).toUpperCase() + record.finding.slice(1);
-    const text = [surfaces, name].filter(Boolean).join(" ");
-    (record.bridgeTeeth || [record.tooth]).forEach(number => {
+    if (!record.treatment && record.finding === "missing") return;
+    const surfaces = record.whole ? "" : formatSurfaceText(record.surfaces, "cer");
+    const name = record.finding === "recurrent caries" ? "recur. caries" : record.finding;
+    const description = formatFindingText(surfaces, name);
+    const text = record.treatment ? "[" + description + "]" : description;
+    (record.treatment ? [record.tooth] : record.bridgeTeeth || [record.tooth]).forEach(number => {
       const container = query(`.tooth-findings-text[data-tooth="${number}"]`);
       if (!container) return;
       const line = document.createElement("div");
       line.className = "tooth-finding-text-line";
+      if (record.treatment) line.classList.add("tooth-treatment-line");
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "tooth-finding-action";
-      remove.textContent = text;
+      remove.textContent = record.finding === "NSF" ? "✓" : record.finding === "super-eruption" ? "↓↓↓" : text;
+      if (record.finding === "NSF") {
+        remove.classList.add("nsf-check");
+        remove.title = "No significant finding";
+      }
+      if (record.finding === "super-eruption") {
+        remove.classList.add("super-eruption-arrow");
+        line.classList.add("super-eruption-line");
+        remove.title = "Super-eruption";
+      }
       remove.setAttribute("aria-label", `Delete ${text} from tooth ${getToothLabel(number)}`);
       remove.addEventListener("click", event => {
         event.stopPropagation();
         if (!window.confirm(`Delete "${text}" from tooth ${getToothLabel(number)}?`)) return;
         findings = findings.filter(item => item !== record);
+        if (!record.treatment && ["Bridge", "bridge"].includes(record.finding)) delete chartEdits["bridge-findings"];
+        if (record.treatment && ["Bridge", "bridge"].includes(record.finding)) {
+          findings.filter(item => item.treatment && item.batchId === record.batchId &&
+            ["Bridge", "bridge"].includes(item.finding)).forEach(item => {
+            item.bridgeTeeth = (item.bridgeTeeth || [item.tooth]).filter(number => number !== record.tooth);
+          });
+        }
         delete chartEdits[record.chartTagId];
         delete chartEdits[`tooth-${record.tooth}|${record.toothLabel || getToothLabel(record.tooth)}`];
         if (record.finding === "missing") delete chartEdits["missing-teeth"];
         refreshChart();
       });
       line.append(remove);
-      container.appendChild(line);
+      if (record.finding === "super-eruption") container.prepend(line);
+      else container.appendChild(line);
     });
   });
 }
@@ -632,15 +598,11 @@ window.addEventListener("resize", () => {
   bridgeResizeFrame = requestAnimationFrame(renderBridges);
 });
 
-function bridgeLabel(label) {
-  return typeof label === "string" && label.startsWith("#") ? label.slice(1) : label;
-}
-
-function formatSurfaceText(surfaces) {
+function formatSurfaceText(surfaces, cervicalLabel = "cervical") {
   const order = ["M", "O", "I", "D", "B", "F", "L", "C"];
   const sorted = [...surfaces].sort((a, b) => order.indexOf(a) - order.indexOf(b));
   const text = sorted.filter(surface => surface !== "C").join("");
-  return sorted.includes("C") ? (text ? text + " cervical" : "cervical") : text;
+  return sorted.includes("C") ? (text ? text + (cervicalLabel === "cer" ? "-" : " ") + cervicalLabel : cervicalLabel) : text;
 }
 
 function highlightMobility(element) {
@@ -670,16 +632,11 @@ function highlightMobility(element) {
   });
 }
 
-function formatChartRecord(record) {
-  const text = recordText(record);
-  return record.treatment ? "[" + text + "]" : text;
-}
-
 function formatTreatmentRecord(record) {
-  if (["Bridge", "bridge"].includes(record.finding)) return isToothMissing(record.tooth) ? "FPD pontic" : "FPD abutment";
+  if (["Bridge", "bridge"].includes(record.finding)) return isToothMissing(record.tooth) ? "Fpd pontic" : "Fpd abutment";
   if (record.proximalDecayTreatment && !record.whole) {
     const surface = formatSurfaceText(record.surfaces).replace(/^OD/, "DO");
-    return surface ? surface + " " + record.finding : record.finding;
+    return formatFindingText(surface, record.finding);
   }
   return recordText(record);
 }
@@ -758,7 +715,6 @@ function createTagChartLine(group) {
   entry.className = "chart-entry chart-tag-entry";
   const line = document.createElement("div");
   line.className = "chart-text chart-tag-list";
-  line.contentEditable = "false";
   const label = document.createElement("button");
   label.type = "button";
   label.contentEditable = "false";
@@ -770,12 +726,13 @@ function createTagChartLine(group) {
   line.append(label, document.createTextNode(":"));
   const editKey = "tooth-" + group.tooth + "-" + group.label;
   const ordered = [...group.records].sort((a, b) => Number(!!a.treatment) - Number(!!b.treatment));
+  const treatmentRecords = ordered.filter(record => record.treatment);
   const parts = [];
   const cleanText = value => value.replace(/\u200b/g, "");
   const syncText = () => {
     line.dataset.copyText = group.label + ":" + parts.map(part =>
       part.gap ? cleanText(part.element.textContent) :
-      (part.record.treatment ? "[" + part.element.textContent + "]" : part.element.textContent)
+      (part.record.treatment ? (part.record === treatmentRecords[0] ? "[" : "") + part.element.textContent + (part.record === treatmentRecords.at(-1) ? "]" : "") : part.element.textContent)
     ).join("");
   };
   const createGap = (key, fallback) => {
@@ -810,31 +767,52 @@ function createTagChartLine(group) {
       record.chartTagId = id;
     }
     createGap(editKey + "-gap-before-" + record.chartTagId,
-      index === 0 || record.treatment ? " " : "; ");
+      index === 0 || record === treatmentRecords[0] ? " " : "; ");
     const tag = document.createElement("span");
-    tag.contentEditable = "false";
     tag.className = "chart-tag" + (record.treatment ? " chart-treatment-tag" : "");
-    const text = document.createElement(record.treatment ? "span" : "button");
+    const text = document.createElement("span");
     text.className = "chart-tag-text" + (record.treatment ? "" : " chart-finding-select");
-    text.contentEditable = "false";
+    text.contentEditable = record.treatment ? "true" : "false";
+    if (record.treatment) {
+      text.tabIndex = 0;
+      text.addEventListener("pointerdown", () => text.focus({ preventScroll: true }));
+    }
+    text.spellcheck = true;
+    text.setAttribute("role", "textbox");
+    text.setAttribute("aria-label", "Edit " + recordText(record) + " on " + group.label);
     if (!record.treatment) {
-      text.type = "button";
       text.dataset.tooth = record.tooth;
       text.dataset.whole = String(record.whole);
       text.dataset.surfaces = JSON.stringify(record.surfaces);
+      text.setAttribute("role", "button");
       text.setAttribute("aria-label", "Select " + recordText(record) + " on " + group.label);
-      text.addEventListener("click", () => selectChartTarget(record.tooth, record.whole, record.surfaces, record));
+      text.tabIndex = 0;
+      text.title = "Select this finding";
+      const selectFinding = () => selectChartTarget(record.tooth, record.whole, record.surfaces, record);
+      text.addEventListener("click", selectFinding);
+      text.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") { event.preventDefault(); selectFinding(); }
+      });
     }
     const defaultText = !record.treatment && ["Bridge", "bridge"].includes(record.finding)
-      ? "bridge (" + (record.bridgeTeeth || [record.tooth]).map(getToothLabel).join("–") + ")"
+      ? "Bridge (" + (record.bridgeTeeth || [record.tooth]).map(getToothLabel).join("–") + ")"
       : record.treatment ? formatTreatmentRecord(record) : recordText(record);
     text.textContent = chartEdits[record.chartTagId] ?? defaultText;
     highlightMobility(text);
+    const saveRecordText = () => {
+      chartEdits[record.chartTagId] = cleanText(text.textContent);
+      delete chartEdits[editKey];
+      syncText();
+    };
+    text.addEventListener("input", saveRecordText);
+    text.addEventListener("blur", () => { saveRecordText(); saveOdontogram(); });
     parts.push({ record, element: text });
     if (record.treatment) {
       const treatment = document.createElement("strong");
       treatment.style.fontWeight = "700";
-      treatment.append(document.createTextNode("["), text, document.createTextNode("]"));
+      if (record === treatmentRecords[0]) treatment.append(document.createTextNode("["));
+      treatment.append(text);
+      if (record === treatmentRecords.at(-1)) treatment.append(document.createTextNode("]"));
       tag.append(treatment);
     } else tag.append(text);
     const remove = document.createElement("button");
@@ -871,7 +849,17 @@ function createTagChartLine(group) {
   entry.append(line);
 
   // The trailing space is part of the line, without a separate notes field.
-  createGap(editKey + "-notes", chartEdits[editKey] ?? " ");
+  const trailingText = createGap(editKey + "-notes", chartEdits[editKey] ?? " ");
+  line.addEventListener("click", event => {
+    if (event.target !== line) return;
+    trailingText.focus();
+    const range = document.createRange();
+    range.selectNodeContents(trailingText);
+    range.collapse(false);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  });
   syncText();
   return entry;
 }
@@ -893,7 +881,7 @@ function createChartLine(editKey, defaultText, removeRecords) {
   const button = document.createElement("button");
   button.className = "delete-chart-line";
   button.textContent = "×";
-  button.title = "Delete this chart line";
+  button.title = "Delete this Note line";
   button.addEventListener("click", () => {
     removeRecords();
     delete chartEdits[editKey];
@@ -915,22 +903,35 @@ function renderBridgeChart(output) {
     group.records.push(record);
     (record.bridgeTeeth || [record.tooth]).forEach( number => { group.teeth.add(number); });
   });
-  groups.forEach((group, key) => {
+  const descriptions = [];
+  const bridgeRecords = [];
+  groups.forEach(group => {
     const teeth = [...group.teeth].sort((a, b) => a - b);
     if (teeth.length < 2) return;
-    const start = teeth[0];
-    const end = teeth[teeth.length - 1];
-    const text = "#" + start + "-" + end + " bridge";
-    output.appendChild( createChartLine( "bridge-" + key, text, () => { findings = findings.filter((record) => !group.records.includes(record)); }
-    ) );
+    const labels = teeth.map(number => {
+      const record = group.records.find(item => item.tooth === number);
+      const bridge = group.records.find(item => item.bridgeStart === number || item.bridgeEnd === number);
+      return record?.toothLabel || (bridge?.bridgeStart === number ? bridge.bridgeStartLabel : bridge?.bridgeEndLabel) || getToothLabel(number);
+    });
+    const text = "Bridge (#" + labels.map(label => String(label).replace(/^#+/, "")).join("-") + ")";
+    descriptions.push(text);
+    bridgeRecords.push(...group.records);
   });
+  if (descriptions.length) {
+    output.appendChild(createChartLine("bridge-findings", descriptions.join(", "), () => {
+      findings = findings.filter(record => !bridgeRecords.includes(record));
+    }));
+  }
 }
 
 function renderChart() {
   const output = byId("output");
   output.innerHTML = "";
+  renderMissingChart(output);
+  renderBridgeChart(output);
   const groups = new Map();
   findings.forEach(record => {
+    if (!record.treatment && ["missing", "Bridge", "bridge"].includes(record.finding)) return;
     const label = record.toothLabel || getToothLabel(record.tooth);
     const key = record.tooth + "|" + label;
     if (!groups.has(key)) groups.set(key, { tooth: record.tooth, label, records: [] });
@@ -950,7 +951,7 @@ function renderChart() {
 }
 
 function renderMissingChart(output) {
-  const missingRecords = findings.filter((record) => record.finding === "missing");
+  const missingRecords = findings.filter((record) => !record.treatment && record.finding === "missing");
   if (missingRecords.length === 0) return;
   const labels = [...new Set( missingRecords.slice() .sort((a, b) => a.tooth - b.tooth) .map((record) => record.toothLabel || getToothLabel(record.tooth)) )];
   const entry = document.createElement("div");
@@ -959,7 +960,7 @@ function renderMissingChart(output) {
   text.className = "chart-text";
   text.contentEditable = "true";
   text.spellcheck = true;
-  text.textContent = chartEdits["missing-teeth"] ?? "Missing teeth: " + labels.join(", ");
+  text.textContent = chartEdits["missing-teeth"] ?? "Missing #" + labels.map(label => String(label).replace(/^#+/, "")).join(", ");
   text.addEventListener("input", () => { chartEdits["missing-teeth"] = text.textContent; });
   text.addEventListener("blur", () => { chartEdits["missing-teeth"] = text.textContent; });
   const deleteButton = document.createElement("button");
@@ -980,13 +981,18 @@ byId("undo").addEventListener( "click", () => {
   const lastBatchId = findings[findings.length - 1].batchId;
   findings = findings.filter((record) => record.batchId !== lastBatchId);
   delete chartEdits["missing-teeth"];
+  delete chartEdits["bridge-findings"];
   renderFindings();
   renderChart();
 });
 byId("copyChart").addEventListener("click", async () => {
+  const note = byId("output");
+  note.classList.remove("note-copy-blink");
+  void note.offsetWidth;
+  note.classList.add("note-copy-blink");
   const entries = [...all("#output .chart-text")];
   if (!entries.length) {
-    alert("The chart is empty.");
+    alert("The Note is empty.");
     return;
   }
   const plain = entries.map(chartLineText).join("\n");
@@ -1031,14 +1037,14 @@ byId("copyChart").addEventListener("click", async () => {
     message.textContent = rich ? "Chart copied with formatting!" : "Chart copied as plain text.";
     setTimeout(() => { message.textContent = ""; }, 2000);
   } catch (error) {
-    message.textContent = "Copy unavailable. Select the chart text and copy it manually.";
+    message.textContent = "Copy unavailable. Select the Note text and copy it manually.";
   }
 });
 
 const findingShortcuts = {
-  d: "decay", c: "composite", a: "amalgam",
+  n: "NSF", d: "decay", c: "composite", a: "amalgam",
   r: "RCT", z: "Zirconia crown", b: "Bridge",
-  w: "wear", m: "missingMain", t: "root tip",
+  m: "missingMain", t: "root tip",
   p: "PFM crown", i: "incipient caries"
 };
 document.addEventListener("keydown", event => {
@@ -1047,10 +1053,11 @@ document.addEventListener("keydown", event => {
   const active = document.activeElement;
   if (active && active.closest(editingSelector)) return;
   if ( event.target instanceof Element && event.target.closest(editingSelector) ) return;
-  const name = findingShortcuts[event.key.toLowerCase()];
+  const treatment = {f: "Composite", e: "Extraction", w: "Watch"}[event.key.toLowerCase()];
+  const name = treatment || findingShortcuts[event.key.toLowerCase()];
   if (!name) return;
-  const button = name === "missingMain" ? byId("missingMain") : Array.from(all(".finding")) .find((button) => button.dataset.name === name);
-  if ( !button || button.disabled || selections.length === 0 ) return;
+  const button = treatment ? query(`.treatment[data-treatment="${treatment}"]`) : name === "missingMain" ? byId("missingMain") : Array.from(all(".finding")) .find((button) => button.dataset.name === name);
+  if ( !button || button.disabled || button.closest("[hidden]") || selections.length === 0 ) return;
   event.preventDefault();
   button.click();
 });
@@ -1097,7 +1104,7 @@ function restoreOdontogram() {
     if ( data.version !== 1 || !Array.isArray(data.findings) || !Array.isArray(data.teeth) ) throw new Error("Invalid saved chart");
     const validFindings = data.findings.every((record) => record && Number.isInteger(record.tooth) && record.tooth >= 1 && record.tooth <= 32 && typeof record.finding === "string" && Array.isArray(record.surfaces) && typeof record.whole === "boolean" && Number.isInteger(record.batchId));
     if (!validFindings) throw new Error("Invalid saved findings");
-    findings = data.findings;
+    findings = data.findings.map(record => record.treatment && record.finding === "Monitor" ? { ...record, finding: "Watch" } : record);
     chartEdits = Object.fromEntries( Object.entries(data.chartEdits || {}) .filter((entry) => typeof entry[1] === "string") );
     nextBatchId = Math.max( Number(data.nextBatchId) || 1, 1 + findings.reduce((max, record) => Math.max(max, record.batchId), 0) );
     data.teeth.forEach(saved => {
@@ -1146,7 +1153,19 @@ byId("confirmClearAll").addEventListener( "click", () => {
 all(".finding-section, .treatment-section")
 .forEach(section => {
   if (section.querySelector(".category-pair")) return;
-  const rows = [...section.children] .filter(row => row.classList.contains("finding-row"));
+  if (section.classList.contains("finding-section")) {
+    const findingRows = [...section.children].filter(row => row.classList.contains("finding-row"));
+    const rowsByName = Object.fromEntries(findingRows.map(row => [row.classList.contains("nsf-row") ? "NSF" : row.querySelector(".finding-label")?.textContent.trim().replace(/:$/, ""), row]));
+    [["NSF", "Caries", "Endo"], ["Material"], ["Non-carious", "Position"]].forEach(names => {
+      const line = document.createElement("div");
+      line.className = "category-pair recall-findings-line";
+      names.forEach(name => { if (rowsByName[name]) line.append(rowsByName[name]); });
+      section.append(line);
+    });
+    return;
+  }
+
+  const rows = [...section.children] .filter(row => row.classList.contains("finding-row") && !row.classList.contains("nsf-row"));
   for (let i = 0; i < rows.length; i += 2) {
     const pair = document.createElement("div");
     pair.className = "category-pair";
@@ -1181,56 +1200,6 @@ if (odontogram && treatmentPanel) {
 (() => {
   const canvas = document.querySelector(".dentition-canvas");
   if (!canvas) return;
-
-  const style = document.createElement("style");
-  style.textContent = `
-    .dentition-canvas.has-action-notice { padding-top: 44px; }
-    .odontogram-action-notice {
-      position: absolute;
-      top: 0;
-      left: var(--tooth-midline, 50%);
-      transform: translateX(-50%);
-      z-index: 12;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      width: max-content;
-      max-width: calc(100% - 24px);
-      box-sizing: border-box;
-      padding: 3px 8px;
-      border: 1px solid rgba(118, 145, 175, .3);
-      border-radius: 12px;
-      background: rgba(255, 249, 214, .92);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 3px 12px rgba(30, 60, 100, .1);
-      color: #203653;
-      font: 12px/1.2 Arial, sans-serif;
-    }
-    .odontogram-action-notice[hidden] { display: none; }
-    .odontogram-action-text {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .odontogram-action-undo {
-      flex: none;
-      padding: 3px 8px;
-      border: 1px solid rgba(118, 145, 175, .4);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, .8);
-      color: #203653;
-      font: bold 11px/1.2 Arial, sans-serif;
-      cursor: pointer;
-    }
-    .odontogram-action-undo:hover { background: #fff; }
-    .odontogram-action-undo:disabled { opacity: .45; cursor: default; }
-    @media (max-width: 640px) {
-      .dentition-canvas.has-action-notice { padding-top: 76px; }
-      .odontogram-action-notice { top: 0; }
-    }
-  `;
-  document.head.append(style);
 
   const notice = document.createElement("div");
   notice.className = "odontogram-action-notice";
@@ -1415,7 +1384,7 @@ if (odontogram && treatmentPanel) {
 (() => {
   const treatment = document.querySelector(".treatment-section")?.closest(".clinical-panel");
   const output = document.getElementById("output");
-  const heading = [...document.querySelectorAll("h2")].find(item => item.textContent.trim() === "Chart");
+  const heading = [...document.querySelectorAll("h2")].find(item => item.textContent.trim() === "Note");
   const grid = document.querySelector(".odontogram-grid");
   if (!treatment || !output || !grid) return;
   const layout = document.createElement("div");
@@ -1424,7 +1393,7 @@ if (odontogram && treatmentPanel) {
   chart.className = "clinical-panel chart-side-panel";
   if (heading) chart.append(heading);
   chart.append(output);
-  [".chart-controls", "#copyMessage", "#autosaveMessage", ".clear-all-area"]
+  [".chart-controls", "#copyMessage", "#autosaveMessage"]
     .forEach(selector => {
       const element = document.querySelector(selector);
       if (element) chart.append(element);
@@ -1434,3 +1403,10 @@ if (odontogram && treatmentPanel) {
   layout.append(chart, treatment);
   grid.after(layout);
 })();
+// Place the page-wide reset control after all content panels.
+const clearAllArea = query(".clear-all-area");
+if (clearAllArea) document.body.append(clearAllArea);
+
+byId("output").addEventListener("animationend", event => {
+  if (event.animationName === "note-copy-blink") byId("output").classList.remove("note-copy-blink");
+});
