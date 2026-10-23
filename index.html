@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dental Odontogram</title>
-  <link rel="stylesheet" href="style.css?v=540680860a">
+  <link rel="stylesheet" href="style.css?v=cervical-label-20261023">
 </head>
 <body>
   <div class="odontogram-grid">
@@ -36,18 +36,19 @@
           <button class="finding surface-finding btn-recurrent" data-name="recurrent caries">Recurrent</button>
           <button class="finding surface-finding btn-gross" data-name="gross caries">Gross</button>
         </div>
-        <div class="finding-row"><span class="finding-label">Material:</span>
-          <button class="finding surface-finding btn-composite" data-name="composite" aria-keyshortcuts="c">(C) Composite</button>
-          <button class="finding surface-finding btn-amalgam" data-name="amalgam" aria-keyshortcuts="a">(A) Amalgam</button>
-          <button class="finding surface-finding btn-sealant" data-name="sealant">Sealant</button>
-          <button class="finding surface-finding btn-irm" data-name="IRM">IRM</button>
-          <button class="finding whole-finding btn-ssc" data-name="SSC">SSC</button>
-          <button class="finding whole-finding btn-zirconia" data-name="Zirconia crown" aria-keyshortcuts="z">(Z) Zirconia</button>
-          <button class="finding whole-finding btn-pfm" data-name="PFM crown" aria-keyshortcuts="p">(P) PFM</button>
-          <button class="finding whole-finding btn-metal" data-name="Metal crown">Metal</button>
-          <button class="finding whole-finding btn-bridge" data-name="Bridge" aria-keyshortcuts="b">(B) Bridge</button>
-          <button class="finding whole-finding btn-implant" data-name="implant">Implant</button>
-        </div>
+        <div class="finding-row"><span class="finding-label">Existing material:</span>
+<span class="existing-material-group"><button class="finding surface-finding btn-composite" data-name="composite" aria-keyshortcuts="c">(C) Composite</button>
+<button class="finding surface-finding btn-amalgam" data-name="amalgam" aria-keyshortcuts="a">(A) Amalgam</button>
+<button class="finding surface-finding btn-sealant" data-name="sealant">Sealant</button>
+<button class="finding surface-finding btn-irm" data-name="IRM">IRM</button></span>
+<span class="existing-material-divider" aria-hidden="true">|</span>
+<span class="existing-material-group"><button class="finding whole-finding btn-ssc" data-name="SSC">SSC</button>
+<button class="finding whole-finding btn-zirconia" data-name="Zirconia crown" aria-keyshortcuts="z">(Z) Zirconia</button>
+<button class="finding whole-finding btn-pfm" data-name="PFM crown" aria-keyshortcuts="p">(P) PFM</button>
+<button class="finding whole-finding btn-metal" data-name="Metal crown">Metal</button>
+<button class="finding whole-finding btn-bridge" data-name="Bridge" aria-keyshortcuts="b">(B) Bridge</button>
+<button class="finding whole-finding btn-implant" data-name="implant">Implant</button></span>
+</div>
         <div class="finding-row"><span class="finding-label">Endo:</span>
           <button class="finding whole-finding btn-rct" data-name="RCT" aria-keyshortcuts="r">(R) RCT</button>
           <button class="finding whole-finding btn-post-core" data-name="post & core">Post & Core</button>
@@ -56,17 +57,23 @@
           <button class="finding whole-finding btn-paro" data-name="PARO">PARO</button>
           <button class="finding whole-finding btn-ankylosis" data-name="ankylosis">Ankylosis</button>
         </div>
-        <div class="finding-row"><span class="finding-label">Non-carious:</span>
-          <button class="finding whole-finding btn-wear" data-name="wear">Wear</button>
-          <button class="finding surface-finding btn-chipped" data-name="chipped">Chipped</button>
-          <button class="finding surface-finding btn-abfraction" data-name="abfraction">Abfraction</button>
-          <button class="finding surface-finding btn-erosion" data-name="erosion">Erosion</button>
-          <button class="finding surface-finding btn-crack" data-name="crack line">Crack Line</button>
-          <button class="finding surface-finding btn-broken" data-name="broken">Broken</button>
-          <button class="finding surface-finding btn-overhang" data-name="overhang">Overhang</button>
-          <button class="finding surface-finding btn-open-margin" data-name="open margin">Open margin</button>
-          <button class="finding surface-finding btn-rest-seat" data-name="rest seat">Rest seat</button>
-        </div>
+        <div class="finding-row noncarious-row"><span class="finding-label">Non-carious:</span>
+<span class="noncarious-group"><button class="finding surface-finding btn-pit" data-name="pit">Pit</button>
+<button class="finding surface-finding btn-deep-groove" data-name="deep groove">Deep groove</button></span>
+<span class="noncarious-divider" aria-hidden="true">|</span>
+<span class="noncarious-group"><button class="finding whole-finding btn-wear" data-name="wear">Wear/Abrasion</button>
+<button class="finding surface-finding btn-abfraction" data-name="abfraction">Abfraction</button>
+<button class="finding surface-finding btn-erosion" data-name="erosion">Erosion</button></span>
+<span class="noncarious-divider" aria-hidden="true">|</span>
+<span class="noncarious-group"><button class="finding surface-finding btn-chipped" data-name="chipped">Chipped</button>
+<button class="finding surface-finding btn-crack" data-name="crack line">Crack line</button>
+<button class="finding surface-finding btn-broken" data-name="broken">Broken</button></span>
+<span class="noncarious-divider" aria-hidden="true">|</span>
+<span class="noncarious-group"><button class="finding surface-finding btn-overhang" data-name="overhang">Overhang</button>
+<button class="finding surface-finding btn-open-margin" data-name="open margin">Open margin</button>
+<button class="finding surface-finding btn-short-margin" data-name="short margin">Short margin</button>
+<button class="finding surface-finding btn-rest-seat" data-name="rest seat">Rest seat</button></span>
+</div>
         <div class="finding-row"><span class="finding-label">Position:</span>
           <button class="finding whole-finding position-button" data-name="mobility">Mobility</button>
           <button class="finding whole-finding position-button" data-name="tilted">Tilted</button>
@@ -75,6 +82,7 @@
           <button class="finding whole-finding position-button" data-name="erupting">Erupting</button>
           <button class="finding whole-finding position-button" data-name="impacted">Impacted</button>
           <button class="finding whole-finding position-button" data-name="unerupted">Unerupted</button>
+          <button class="finding whole-finding position-button" data-name="pericoronitis">Pericoronitis</button>
         </div>
       </div>
     </section>
@@ -86,8 +94,9 @@
         <div class="finding-row"><span class="finding-label">Conservative:</span>
           <button type="button" class="treatment watch-treatment btn-watch" data-treatment="Watch" aria-keyshortcuts="w">(W) Watch</button>
           <button type="button" class="treatment surface-treatment btn-sdf" data-treatment="SDF">SDF</button>
+          <button type="button" class="treatment surface-treatment btn-sealant" data-treatment="Sealant">Sealant</button>
         </div>
-        <div class="finding-row treatment-single-line"><span class="finding-label">Filling:</span>
+        <div class="finding-row treatment-single-line"><span class="finding-label">Restoration:</span>
           <button type="button" class="treatment surface-treatment btn-composite" data-treatment="Composite" aria-keyshortcuts="f">(F) Composite</button>
           <button type="button" class="treatment surface-treatment btn-amalgam" data-treatment="Amalgam">Amalgam</button>
           <button type="button" class="treatment surface-treatment btn-rmgi" data-treatment="RMGI">RMGI</button>
@@ -132,7 +141,7 @@
       <button id="confirmClearAll" type="button">Yes, delete all</button>
     </div>
   </dialog>
-  <script src="script.js?v=e3e33468e1"></script>
+  <script src="script.js?v=cervical-label-20261023"></script>
 
 <script>
 // Preserve one line per category without adding horizontal scrolling.

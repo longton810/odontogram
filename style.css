@@ -653,3 +653,20 @@ body .chart-treatment-layout .treatment-section .finding-row.fit-category-line {
 }
 body .finding-section .finding-row::after,
 body .treatment-section .finding-row::after { content: none; }
+
+/* Non-carious findings are grouped by clinical type. */
+.noncarious-group { display:inline-flex; align-items:center; flex-wrap:nowrap; gap:3px; }
+.noncarious-divider { color:var(--muted,#62748b); font-weight:bold; margin:0 3px; }
+.btn-pit { background:#80cbc4; color:#fff; }
+.btn-deep-groove { background:#4db6ac; color:#fff; }
+.btn-short-margin { background:#42a5f5; color:white; }
+.surface.pit { fill:#80cbc4; stroke:#267f77; stroke-width:2; }
+.surface.deep-groove { fill:#4db6ac; stroke:#267f77; stroke-width:2; }
+.surface.short-margin { fill:#42a5f5; stroke:#1565c0; stroke-width:2; }
+
+.existing-material-group { display:inline-flex; align-items:center; flex-wrap:nowrap; gap:3px; }
+.existing-material-divider { color:var(--muted,#62748b); font-weight:bold; margin:0 3px; }
+
+/* Position finding: Pericoronitis */
+.position-button[data-name="pericoronitis"],
+.dentition-exam .position-button[data-name="pericoronitis"] { background-color: #f9a8d4; color: #831843; border-color: #f472b6; }
